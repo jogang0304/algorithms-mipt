@@ -1,3 +1,7 @@
+*
+!*/
+!*.*
+
 # Prerequisites
 *.d
 
@@ -33,6 +37,3 @@
 
 .vscode
 output/
-*
-!*/
-!*.*
