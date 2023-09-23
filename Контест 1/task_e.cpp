@@ -14,9 +14,15 @@ struct Fragment {
 bool SortCondition(Action& left_value, Action& right_value) {
   bool answer = false;
   if ((left_value.time < right_value.time) ||
-      (left_value.time == right_value.time && !left_value.start)) {
+      ((left_value.time == right_value.time) && left_value.start)) {
     answer = true;
   }
+  return answer;
+}
+
+bool Equal(Action& left_value, Action& right_value) {
+  bool answer = (left_value.time == right_value.time) &&
+                (left_value.start == right_value.start);
   return answer;
 }
 
@@ -30,11 +36,11 @@ int Partition(std::vector<Action>& values, int left, int right) {
   auto left_pointer = left;
   auto right_pointer = right - 1;
   while (left_pointer <= right_pointer) {
-    while (values[left_pointer].time != pivot.time &&
+    while (!Equal(values[left_pointer], pivot) &&
            SortCondition(values[left_pointer], pivot)) {
       ++left_pointer;
     }
-    while (values[right_pointer].time != pivot.time &&
+    while (!Equal(values[right_pointer], pivot) &&
            SortCondition(pivot, values[right_pointer])) {
       --right_pointer;
     }
