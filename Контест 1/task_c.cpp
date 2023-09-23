@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 
-const int kInf = 1'000'000'000;
+const int kInf = 2'000'000'000;
 
 int main() {
   int a_size;

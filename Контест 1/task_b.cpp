@@ -4,7 +4,7 @@
 #include <vector>
 
 int main() {
-  int number_of_elements;
+  size_t number_of_elements;
   std::cin >> number_of_elements;
   std::vector<long double> array_of_numbers(number_of_elements);
   for (auto& element : array_of_numbers) {

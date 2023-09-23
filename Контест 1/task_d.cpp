@@ -25,7 +25,6 @@ long long HowManyLightsNeeded(std::vector<long long>& coordinates,
               1;  // +1 потому что я считаю освещение по точкам, а не по
                   // отрезкам. Я перехожу на первую неосвещенную точку, до
                   // которой все датчики освещены
-
     ++ans;
     if (ans > max_lights) {
       break;

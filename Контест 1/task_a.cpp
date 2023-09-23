@@ -5,7 +5,7 @@
 const int kInf = 2'000'000'000;
 
 int main() {
-  size_t amount_of_candidates;
+  int amount_of_candidates;
   std::cin >> amount_of_candidates;
   std::vector<int> speeds(amount_of_candidates);
   for (auto& speed : speeds) {

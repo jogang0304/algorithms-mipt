@@ -5,6 +5,10 @@ bool SortCondition(int left_value, int right_value) {
   return left_value <= right_value;
 }
 
+bool Equal(int left_value, int right_value) {
+  return left_value == right_value;
+}
+
 int ChoosePivotIndex(int left, int right) {
   // сделать выбор медианы через deterministic quick select
   return (right + left) / 2;
@@ -15,11 +19,11 @@ int Partition(std::vector<int>& values, int left, int right) {
   auto left_pointer = left;
   auto right_pointer = right - 1;
   while (left_pointer <= right_pointer) {
-    while (values[left_pointer] != pivot &&
+    while (!Equal(values[left_pointer], pivot) &&
            SortCondition(values[left_pointer], pivot)) {
       ++left_pointer;
     }
-    while (values[right_pointer] != pivot &&
+    while (!Equal(values[right_pointer], pivot) &&
            SortCondition(pivot, values[right_pointer])) {
       --right_pointer;
     }
