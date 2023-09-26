@@ -20,10 +20,17 @@ $T(k) = 3T(\frac{k}{2}) + k$ \newline
 $a = 3;\ b = 2;\ f(k) = O(k^{log_2 3 - \epsilon}) = O(k^1)$ \newline
 $\epsilon > 0 \rightarrow$ первый случай \newline
 $T(k) = \theta(k^{log_2 3})$ \newline
-$T(2^k) = \theta(2^{k^{log2 3}})$ \newline
-$T(n) = \theta((2^k)^{k^{log_2 3 - 1}})$ \newline
-$T(n) = \theta(n^{k^{log_2 \frac{3}{2}}})$ \newline
-$T(n) = \theta(n^{log_2^{log_2 \frac{3}{2}} n})$
+Так как k как и n уменьшается до примерно 1, то T(k) = T(n). Например если $T(k) = O(k)$, то $T(n) = O(logn) = O(k)$\newline
+$O(n) = \theta(log^{log_2 3}n)$
+
+\section*{2}
+$T(n) = 2T(\frac{n}{2}) + nlog_2 n$ \newline
+$T(n) = nlog_2 n + 2\frac{n}{2}log_2 \frac{n}{2} + 4T(\frac{n}{4})$\newline
+$T(n) = nlog_2 n + n(log_2 n - 1) + n(log_2 n - 2) + \dots$\newline
+$T(n) = log_2 n (nlog_2 n) - (0 + 1 + 2 + \dots + (n-1))$\newline
+$T(n) = n log_2^2 n - \frac{log_2 n (n-1)}{2}$\newline
+$T(n) = O(nlog_2^2 n - nlog_2 n) = O(nlog_2^2 n)$
+
 
 
 \section*{4}
