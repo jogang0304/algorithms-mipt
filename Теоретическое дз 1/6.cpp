@@ -22,7 +22,7 @@ int main() {
       answer = false;
       break;
     }
-    s = s + 1 - a[i];
+    s = s + 1 - a[i]; // min(..., n-1 - (n-2) + 1 + x - a[n-1])
   }
   std::cout << answer << "\n";
 }
