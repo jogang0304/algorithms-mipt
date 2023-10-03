@@ -5,6 +5,29 @@ bool Equal(int left, int right) { return left == right; }
 
 bool SortCondition(int left, int right) { return left <= right; }
 
+std::vector<int> Merge(std::vector<int>& values, long long& answer, size_t left,
+                       size_t right) {
+  size_t medium = (left + right) / 2;
+  size_t left_part_index = left;
+  size_t right_part_index = medium;
+  std::vector<int> sorted_array(0);
+  while (left_part_index < medium || right_part_index < right) {
+    if (left_part_index < medium && right_part_index < right) {
+      if (SortCondition(values[left_part_index], values[right_part_index])) {
+        sorted_array.push_back(values[left_part_index++]);
+      } else {
+        sorted_array.push_back(values[right_part_index++]);
+        answer += (medium - left_part_index);
+      }
+    } else if (left_part_index < medium) {
+      sorted_array.push_back(values[left_part_index++]);
+    } else {
+      sorted_array.push_back(values[right_part_index++]);
+    }
+  }
+  return sorted_array;
+}
+
 // сортирует отрезок с индексами [left, right)
 long long MergeSort(std::vector<int>& values, size_t left = 0,
                     size_t right = 0) {
@@ -21,24 +44,7 @@ long long MergeSort(std::vector<int>& values, size_t left = 0,
     size_t medium = (left + right) / 2;
     answer += MergeSort(values, left, medium);
     answer += MergeSort(values, medium, right);
-    size_t left_part_index = left;
-    size_t right_part_index = medium;
-    std::vector<int> sorted_array(0);
-    while (left_part_index < medium || right_part_index < right) {
-      if (left_part_index < medium && right_part_index < right) {
-        if (SortCondition(values[left_part_index], values[right_part_index])) {
-          sorted_array.push_back(values[left_part_index++]);
-        } else {
-          sorted_array.push_back(values[right_part_index++]);
-          // test: 1 100 200 3 4 5
-          answer += (medium - left_part_index);
-        }
-      } else if (left_part_index < medium) {
-        sorted_array.push_back(values[left_part_index++]);
-      } else {
-        sorted_array.push_back(values[right_part_index++]);
-      }
-    }
+    auto sorted_array = Merge(values, answer, left, right);
     for (size_t i = left; i < right; ++i) {
       values[i] = sorted_array[i - left];
     }

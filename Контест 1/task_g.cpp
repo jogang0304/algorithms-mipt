@@ -3,21 +3,17 @@
 #include <iostream>
 #include <vector>
 
-// byte_from_end начинается с 0
-unsigned char GetNByte(unsigned long long number, size_t byte_from_end) {
-  // CHAR_BIT = 8 - количесво бит в байте
-  // нужный байт поддвигается к концу числа, чтобы его можно было легко взять
+unsigned char GetNByte(u_int64_t number, size_t byte_from_end) {
   auto shifted_number = number >> CHAR_BIT * byte_from_end;
-  // UCHAR_MAX = 0xFF - один байт
   auto byte = static_cast<unsigned char>(shifted_number & UCHAR_MAX);
   return byte;
 }
 
-void LSDSort(std::vector<unsigned long long>& values) {
-  for (size_t byte_from_end = 0; byte_from_end < sizeof(unsigned long long);
+void LSDSort(std::vector<u_int64_t>& values) {
+  for (size_t byte_from_end = 0; byte_from_end < sizeof(u_int64_t);
        ++byte_from_end) {
-    std::vector<std::vector<unsigned long long>> groups(
-        UCHAR_MAX + 1, std::vector<unsigned long long>(0));
+    std::vector<std::vector<u_int64_t>> groups(UCHAR_MAX + 1,
+                                               std::vector<u_int64_t>(0));
     for (auto number : values) {
       auto number_n_char = GetNByte(number, byte_from_end);
       groups[number_n_char].push_back(number);
@@ -34,7 +30,7 @@ void LSDSort(std::vector<unsigned long long>& values) {
 int main() {
   int amount_of_elements;
   std::cin >> amount_of_elements;
-  std::vector<unsigned long long> numbers(amount_of_elements);
+  std::vector<u_int64_t> numbers(amount_of_elements);
   for (auto& number : numbers) {
     std::cin >> number;
   }

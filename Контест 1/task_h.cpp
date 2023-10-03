@@ -2,6 +2,8 @@
 #include <stack>
 #include <vector>
 
+const int kMaxArraySizeForMedian = 10200;
+
 bool SortCondition(int left_value, int right_value) {
   return left_value <= right_value;
 }
@@ -10,9 +12,26 @@ bool Equal(int left_value, int right_value) {
   return left_value == right_value;
 }
 
-int ChoosePivotIndex(int left, int right) {
-  // сделать выбор медианы через deterministic quick select
-  return (right + left) / 2;
+void PreProcessPointers(std::vector<int>& values, size_t& left_pointer,
+                        size_t& right_pointer, int pivot) {
+  while (!Equal(values[left_pointer], pivot) &&
+         SortCondition(values[left_pointer], pivot)) {
+    ++left_pointer;
+  }
+  while (!Equal(values[right_pointer], pivot) &&
+         SortCondition(pivot, values[right_pointer])) {
+    --right_pointer;
+  }
+}
+
+void PostProcessPointers(std::vector<int>& values, size_t& left_pointer,
+                         size_t& right_pointer, int pivot) {
+  while (left_pointer + 1 < values.size() && values[left_pointer] <= pivot) {
+    ++left_pointer;
+  }
+  while (right_pointer >= 1 && values[right_pointer] >= pivot) {
+    --right_pointer;
+  }
 }
 
 std::pair<size_t, size_t> Partition(std::vector<int>& values, size_t left,
@@ -20,32 +39,17 @@ std::pair<size_t, size_t> Partition(std::vector<int>& values, size_t left,
   auto left_pointer = left;
   auto right_pointer = right - 1;
   while (left_pointer <= right_pointer) {
-    while (!Equal(values[left_pointer], pivot) &&
-           SortCondition(values[left_pointer], pivot)) {
-      ++left_pointer;
-    }
-    while (!Equal(values[right_pointer], pivot) &&
-           SortCondition(pivot, values[right_pointer])) {
-      --right_pointer;
-    }
+    PreProcessPointers(values, left_pointer, right_pointer, pivot);
     if (left_pointer <= right_pointer) {
       std::swap(values[left_pointer], values[right_pointer]);
       ++left_pointer;
       --right_pointer;
     }
   }
-  while (left_pointer + 1 < values.size() && values[left_pointer] <= pivot) {
-    ++left_pointer;
-  }
-  while (right_pointer >= 1 && values[right_pointer] >= pivot) {
-    --right_pointer;
-  }
-  // values[right_pointer] - последний элемент, < pivot
-  // values[left_pointer] - первый элемент, > pivot
+  PostProcessPointers(values, left_pointer, right_pointer, pivot);
   return {right_pointer, left_pointer};
 }
 
-const int kMaxArraySizeForMedian = 10200;
 int Median(std::vector<int>& values) {
   int sorted_values[kMaxArraySizeForMedian * 2];
   sorted_values[kMaxArraySizeForMedian] = values[0];
@@ -63,36 +67,40 @@ int Median(std::vector<int>& values) {
   return sorted_values[(maximum_index + minimum_index) / 2 +
                        ((maximum_index + minimum_index) % 2)];
 }
-// position - индекс (нумерация с 0)
+
+std::vector<int> GetMediansOfFives(std::vector<int>& values, size_t left,
+                                   size_t right) {
+  std::vector<int> answer(0);
+  answer.reserve((right - left) / 5);
+  std::vector<int> five_numbers(0);
+  for (size_t i = left; i < right; i += 5) {
+    five_numbers.resize(0);
+    five_numbers.reserve(5);
+    for (size_t j = i; j < i + 5 && j < right; ++j) {
+      five_numbers.push_back(values[j]);
+    }
+    answer.push_back(Median(five_numbers));
+  }
+  return answer;
+}
+
 int QuickSelect(std::vector<int>& values, size_t position) {
   int answer;
   auto left = 0;
   auto right = values.size();
   std::vector<int> medians(0);
-  std::vector<int> five_numbers(0);
   while (true) {
-    medians.resize(0);
-    medians.reserve((right - left) / 5);
-    for (size_t i = left; i < right; i += 5) {
-      five_numbers.resize(0);
-      five_numbers.reserve(5);
-      for (size_t j = i; j < i + 5 && j < right; ++j) {
-        five_numbers.push_back(values[j]);
-      }
-      medians.push_back(Median(five_numbers));
-    }
+    medians = GetMediansOfFives(values, left, right);
     int pivot;
-    if (medians.size() <= kMaxArraySizeForMedian) {
+    if (values.size() <= kMaxArraySizeForMedian) {
       pivot = Median(medians);
     } else {
       pivot = QuickSelect(medians, medians.size() / 2);
     }
-
     auto part = Partition(values, left, right, pivot);
     if (position <= part.first) {
       right = part.first + 1;
     } else if (position > part.first && position < part.second) {
-      // между part.first и part.second все элементы одинаковые и равные pivot
       answer = values[position];
       break;
     } else {

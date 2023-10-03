@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
 
+const int kMaxArraySizeForMedian = 10200;
+
 inline bool SortCondition(int left_value, int right_value) {
   return left_value <= right_value;
 }
@@ -34,12 +36,9 @@ std::pair<size_t, size_t> Partition(std::vector<int>& values, size_t left,
   while (right_pointer >= 1 && values[right_pointer] >= pivot) {
     --right_pointer;
   }
-  // values[right_pointer] - последний элемент, < pivot
-  // values[left_pointer] - первый элемент, > pivot
   return {right_pointer, left_pointer};
 }
 
-const int kMaxArraySizeForMedian = 10200;
 int Median(std::vector<int>& values) {
   int sorted_values[kMaxArraySizeForMedian * 2];
   sorted_values[kMaxArraySizeForMedian] = values[0];
