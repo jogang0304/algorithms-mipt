@@ -21,11 +21,7 @@ long long HowManyLightsNeeded(std::vector<long long>& coordinates,
   long long ans = 0;
   long long cur_pos = coordinates[0];
   while (cur_pos <= (coordinates[coordinates.size() - 1])) {
-    cur_pos = coordinates[FindLightME(coordinates, cur_pos)] + light_area +
-              1;  // +1 потому что я считаю освещение по точкам, а не по
-                  // отрезкам. Я перехожу на первую неосвещенную точку, до
-                  // которой все датчики освещены
-
+    cur_pos = coordinates[FindLightME(coordinates, cur_pos)] + light_area + 1;
     ++ans;
     if (ans > max_lights) {
       break;

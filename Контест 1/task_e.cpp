@@ -26,10 +26,7 @@ bool Equal(Action& left_value, Action& right_value) {
   return answer;
 }
 
-int ChoosePivotIndex(int left, int right) {
-  // сделать выбор медианы через deterministic quick select
-  return (right + left) / 2;
-}
+int ChoosePivotIndex(int left, int right) { return (right + left) / 2; }
 
 int Partition(std::vector<Action>& values, int left, int right) {
   auto pivot = values[ChoosePivotIndex(left, right)];
