@@ -46,6 +46,22 @@ decreaseKey(i, delta > 0):
   siftUp(i)
 
 
+добавим опреацию erase(x) (x в куче существует)
+Способы:
+1) по указателям (для x известен индекс i в куче):
+  a[i] = -inf
+  siftUp(i)
+  extractMin
+2) по значению
+  заведём доп. кучу удалённых элементов
+  в куче A лежат добавленные элементы, в D - удалённые
+  erase(x): D.insert(x)
+  При обработке запроса getMin или extractMin:
+    пока A.getMin == D.getMin:
+      A.extractMin(), D.extractMin()
+
+
+
 */
 
 #include <iostream>
