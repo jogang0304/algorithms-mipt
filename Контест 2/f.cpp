@@ -78,6 +78,8 @@ class BinaryHeap {
 };
 
 int main() {
+  std::ios_base::sync_with_stdio(false);
+  std::cin.tie(NULL);
   size_t amount_of_questions;
   std::cin >> amount_of_questions;
   BinaryHeap heap;
