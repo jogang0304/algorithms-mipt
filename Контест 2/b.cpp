@@ -1,7 +1,33 @@
+#include <algorithm>
 #include <iostream>
 #include <vector>
 
-const long long kInf = 2'000'000'000;
+// max на [left, right)
+long long MaxArea(std::vector<int>& heights, size_t left, size_t right) {
+  if (right - left == 1) {
+    return heights[left];
+  }
+  if (right - left < 1) {
+    return -1;
+  }
+  int min_height = heights[left];
+  int min_height_index = left;
+  for (size_t i = left + 1; i < right; ++i) {
+    if ((heights[i] < min_height) ||
+        (heights[i] == min_height &&
+         (abs(static_cast<int>(i) - static_cast<int>(heights.size()) / 2) <
+          abs(static_cast<int>(min_height_index) -
+              static_cast<int>(heights.size()) / 2)))) {
+      min_height = heights[i];
+      min_height_index = i;
+    }
+  }
+  long long answer = (right - left) * min_height;
+  auto left_max = MaxArea(heights, left, min_height_index);
+  auto right_max = MaxArea(heights, min_height_index + 1, right);
+  answer = std::max(answer, std::max(left_max, right_max));
+  return answer;
+}
 
 int main() {
   int amount_of_heights;
@@ -10,28 +36,5 @@ int main() {
   for (auto& height : heights) {
     std::cin >> height;
   }
-  long long max_area = 0;
-  for (size_t start_height = 0; start_height < heights.size(); ++start_height) {
-    long long cur_min_height = kInf;
-    long long cur_max_area = 0;
-    for (size_t i = start_height;
-         i < heights.size() &&
-         (cur_min_height *
-              (static_cast<long long>(heights.size() - start_height)) >
-          max_area);
-         ++i) {
-      long long height = heights[i];
-      if (height < cur_min_height) {
-        cur_min_height = height;
-      }
-      long long cur_area = cur_min_height * (i - start_height + 1);
-      if (cur_area > cur_max_area) {
-        cur_max_area = cur_area;
-      }
-    }
-    if (cur_max_area > max_area) {
-      max_area = cur_max_area;
-    }
-  }
-  std::cout << max_area << std::endl;
+  std::cout << MaxArea(heights, 0, heights.size());
 }
