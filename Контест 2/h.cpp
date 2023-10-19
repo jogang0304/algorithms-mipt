@@ -2,15 +2,15 @@
 #include <set>
 #include <vector>
 
-const int kErrorCode = -10;
+const long long kErrorCode = -10;
 
 class BinaryHeap {
  private:
   bool isMinHeap_;
-  std::vector<std::pair<int, size_t>> elements_;
+  std::vector<std::pair<long long, size_t>> elements_;
   std::set<size_t> deleted_indexes_;
-  static bool CompareForMinHeap(std::pair<int, size_t>& left,
-                                std::pair<int, size_t>& right) {
+  inline static bool CompareForMinHeap(std::pair<long long, size_t>& left,
+                                       std::pair<long long, size_t>& right) {
     return left.first < right.first;
   }
   void SiftUp(size_t index) {
@@ -30,12 +30,12 @@ class BinaryHeap {
     }
     size_t child_index = 2 * index;
     if (2 * index + 1 <= elements_.size() - 1 &&
-        ((isMinHeap_ && elements_[2 * index + 1] < elements_[2 * index]) ||
-         (!isMinHeap_ && elements_[2 * index + 1] > elements_[2 * index]))) {
+        (isMinHeap_ ==
+         CompareForMinHeap(elements_[2 * index + 1], elements_[2 * index]))) {
       child_index = 2 * index + 1;
     }
-    if ((isMinHeap_ && elements_[child_index] < elements_[index]) ||
-        (!isMinHeap_ && elements_[child_index] > elements_[index])) {
+    if (isMinHeap_ ==
+        CompareForMinHeap(elements_[child_index], elements_[index])) {
       std::swap(elements_[child_index], elements_[index]);
       SiftDown(child_index);
     }
@@ -55,16 +55,17 @@ class BinaryHeap {
   BinaryHeap(bool is_min_heap = true) {
     isMinHeap_ = is_min_heap;
     elements_.resize(1);
+    deleted_indexes_.clear();
   }
-  BinaryHeap(std::vector<std::pair<int, size_t>>& values,
+  BinaryHeap(std::vector<std::pair<long long, size_t>>& values,
              bool is_min_heap = true) {
     isMinHeap_ = is_min_heap;
     elements_ = values;
-    for (int i = elements_.size() - 1; i >= 1; --i) {
+    for (long long i = elements_.size() - 1; i >= 1; --i) {
       SiftDown(i);
     }
   }
-  std::pair<int, size_t> GetRoot() {
+  std::pair<long long, size_t> GetRoot() {
     ExtractDeletedRoots();
     if (elements_.size() > 1) {
       return elements_[1];
@@ -79,11 +80,14 @@ class BinaryHeap {
       SiftDown(1);
     }
   }
-  void Insert(std::pair<int, size_t>& value) {
+  void Insert(std::pair<long long, size_t>& value) {
     elements_.push_back(value);
     SiftUp(elements_.size() - 1);
   }
-  size_t Size() { return elements_.size() - 1 - deleted_indexes_.size(); }
+  size_t Size() {
+    ExtractDeletedRoots();
+    return elements_.size() - 1 - deleted_indexes_.size();
+  }
   void Clear() {
     elements_.resize(1);
     deleted_indexes_.clear();
@@ -103,40 +107,44 @@ class MinMaxHeap {
     MaxHeap_ = BinaryHeap(false);
     index_ = 0;
   }
-  void Insert(int value) {
-    std::pair<int, size_t> to_insert = {value, index_++};
+  void Insert(long long value) {
+    std::pair<long long, size_t> to_insert = {value, ++index_};
     MinHeap_.Insert(to_insert);
     MaxHeap_.Insert(to_insert);
   }
 
-  int ExtractMin() {
+  long long ExtractMin() {
     auto answer = MinHeap_.GetRoot();
-    MinHeap_.ExtractRoot();
-    MaxHeap_.AddDeletedIndex(answer.second);
+    if (answer.first != kErrorCode) {
+      MinHeap_.ExtractRoot();
+      MaxHeap_.AddDeletedIndex(answer.second);
+    }
     return answer.first;
   }
-  int GetMin() {
+  long long GetMin() {
     auto answer = MinHeap_.GetRoot();
     return answer.first;
   }
-  int ExtractMax() {
+  long long ExtractMax() {
     auto answer = MaxHeap_.GetRoot();
-    MaxHeap_.ExtractRoot();
-    MinHeap_.AddDeletedIndex(answer.second);
+    if (answer.first != kErrorCode) {
+      MaxHeap_.ExtractRoot();
+      MinHeap_.AddDeletedIndex(answer.second);
+    }
     return answer.first;
   }
-  int GetMax() {
+  long long GetMax() {
     auto answer = MaxHeap_.GetRoot();
     return answer.first;
   }
-  int Size() { return MinHeap_.Size(); }
+  long long Size() { return MinHeap_.Size(); }
   void Clear() {
     MinHeap_.Clear();
     MaxHeap_.Clear();
   }
 };
 
-void PrintAnswer(int ans) {
+void PrintAnswer(long long ans) {
   if (ans == kErrorCode) {
     std::cout << "error" << std::endl;
   } else {
@@ -152,7 +160,7 @@ int main() {
     std::string command;
     std::cin >> command;
     if (command == "insert") {
-      int value;
+      long long value;
       std::cin >> value;
       heap.Insert(value);
       std::cout << "ok" << std::endl;
@@ -170,7 +178,7 @@ int main() {
       PrintAnswer(ans);
     } else if (command == "size") {
       auto ans = heap.Size();
-      std::cout << ans << std::endl;
+      PrintAnswer(ans);
     } else if (command == "clear") {
       heap.Clear();
       std::cout << "ok" << std::endl;
