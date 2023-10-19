@@ -1,40 +1,35 @@
-#include <algorithm>
 #include <iostream>
+#include <stack>
 #include <vector>
 
-// max на [left, right)
-long long MaxArea(std::vector<int>& heights, size_t left, size_t right) {
-  if (right - left == 1) {
-    return heights[left];
+int main() {
+  long long amount_of_heights;
+  std::cin >> amount_of_heights;
+  std::vector<long long> heights(amount_of_heights + 2);
+  heights[0] = -1;
+  heights[amount_of_heights + 1] = 0;
+  for (long long i = 1; i < amount_of_heights + 1; ++i) {
+    std::cin >> heights[i];
   }
-  if (right - left < 1) {
-    return -1;
-  }
-  int min_height = heights[left];
-  int min_height_index = left;
-  for (size_t i = left + 1; i < right; ++i) {
-    if ((heights[i] < min_height) ||
-        (heights[i] == min_height &&
-         (abs(static_cast<int>(i) - static_cast<int>(heights.size()) / 2) <
-          abs(static_cast<int>(min_height_index) -
-              static_cast<int>(heights.size()) / 2)))) {
-      min_height = heights[i];
-      min_height_index = i;
+  std::stack<long long> stack;
+  stack.push(0);
+  long long max_area = 0;
+  long long last_deleted_index = -1;
+  for (long long i = 1; i < amount_of_heights + 2; ++i) {
+    if (heights[i] >= heights[stack.top()]) {
+      stack.push(i);
+      last_deleted_index = -1;
+    } else {
+      while (stack.size() > 1 && heights[i] < heights[stack.top()]) {
+        long long cur_rectangle = heights[stack.top()] * (i - stack.top());
+        max_area = std::max(max_area, cur_rectangle);
+        last_deleted_index = stack.top();
+        stack.pop();
+      }
+      heights[last_deleted_index] =
+          std::min(heights[last_deleted_index], heights[i]);
+      stack.push(last_deleted_index);
     }
   }
-  long long answer = (right - left) * min_height;
-  auto left_max = MaxArea(heights, left, min_height_index);
-  auto right_max = MaxArea(heights, min_height_index + 1, right);
-  answer = std::max(answer, std::max(left_max, right_max));
-  return answer;
-}
-
-int main() {
-  int amount_of_heights;
-  std::cin >> amount_of_heights;
-  std::vector<int> heights(amount_of_heights);
-  for (auto& height : heights) {
-    std::cin >> height;
-  }
-  std::cout << MaxArea(heights, 0, heights.size());
+  std::cout << max_area;
 }
