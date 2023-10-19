@@ -1,181 +1,179 @@
 #include <iostream>
+#include <set>
 #include <vector>
 
-namespace QuickSelect {
-bool SortCondition(int left_value, int right_value) {
-  return left_value <= right_value;
-}
+const int kErrorCode = -10;
 
-bool Equal(int left_value, int right_value) {
-  return left_value == right_value;
-}
-
-std::pair<size_t, size_t> Partition(std::vector<int>& values, size_t left,
-                                    size_t right, int pivot) {
-  auto left_pointer = left;
-  auto right_pointer = right - 1;
-  while (left_pointer <= right_pointer) {
-    while (!Equal(values[left_pointer], pivot) &&
-           SortCondition(values[left_pointer], pivot)) {
-      ++left_pointer;
-    }
-    while (!Equal(values[right_pointer], pivot) &&
-           SortCondition(pivot, values[right_pointer])) {
-      --right_pointer;
-    }
-    if (left_pointer <= right_pointer) {
-      std::swap(values[left_pointer], values[right_pointer]);
-      ++left_pointer;
-      --right_pointer;
-    }
-  }
-  while (left_pointer + 1 < values.size() && values[left_pointer] <= pivot) {
-    ++left_pointer;
-  }
-  while (right_pointer >= 1 && values[right_pointer] >= pivot) {
-    --right_pointer;
-  }
-  // values[right_pointer] - последний элемент, < pivot
-  // values[left_pointer] - первый элемент, > pivot
-  return {right_pointer, left_pointer};
-}
-
-// position - индекс (нумерация с 0)
-std::pair<int, size_t> QuickSelect(std::vector<int>& values, size_t position) {
-  int answer;
-  size_t answer_index;
-  auto left = 0;
-  auto right = values.size();
-  while (true) {
-    auto part = Partition(values, left, right, values[(left + right) / 2]);
-    if (position <= part.first) {
-      right = part.first + 1;
-    } else if (position > part.first && position < part.second) {
-      // между part.first и part.second все элементы одинаковые и равные pivot
-      answer = values[position];
-      answer_index = position;
-      break;
-    } else {
-      left = part.second;
-    }
-  }
-  return {answer, answer_index};
-}
-}  // namespace QuickSelect
-
-namespace Heap {
-class Heap {
-  /*
-    Все левые дети - меньше, все правые - больше или равны
-  */
+class BinaryHeap {
  private:
-  size_t SiftUp(size_t index);
-  void SiftDown(size_t index);
+  bool isMinHeap_;
+  std::vector<std::pair<int, size_t>> elements_;
+  std::set<size_t> deleted_indexes_;
+  static bool CompareForMinHeap(std::pair<int, size_t>& left,
+                                std::pair<int, size_t>& right) {
+    return left.first < right.first;
+  }
+  void SiftUp(size_t index) {
+    if (index <= 1) {
+      return;
+    }
+    size_t parent_index = index / 2;
+    if (isMinHeap_ ==
+        CompareForMinHeap(elements_[index], elements_[parent_index])) {
+      std::swap(elements_[index], elements_[parent_index]);
+      SiftUp(parent_index);
+    }
+  }
+  void SiftDown(size_t index) {
+    if (2 * index > elements_.size() - 1) {
+      return;
+    }
+    size_t child_index = 2 * index;
+    if (2 * index + 1 <= elements_.size() - 1 &&
+        ((isMinHeap_ && elements_[2 * index + 1] < elements_[2 * index]) ||
+         (!isMinHeap_ && elements_[2 * index + 1] > elements_[2 * index]))) {
+      child_index = 2 * index + 1;
+    }
+    if ((isMinHeap_ && elements_[child_index] < elements_[index]) ||
+        (!isMinHeap_ && elements_[child_index] > elements_[index])) {
+      std::swap(elements_[child_index], elements_[index]);
+      SiftDown(child_index);
+    }
+  }
+  void ExtractDeletedRoots() {
+    while (true) {
+      if (deleted_indexes_.find(elements_[1].second) ==
+          deleted_indexes_.end()) {
+        break;
+      }
+      deleted_indexes_.erase(elements_[1].second);
+      this->ExtractRoot();
+    }
+  }
 
  public:
-  std::vector<int> elements;
-  Heap();
-  void Insert(int value);
-  int GetMin();
-  int ExtractMin();
-  int GetMax();
-  int ExtractMax();
-  size_t Size();
-  void Clear();
+  BinaryHeap(bool is_min_heap = true) {
+    isMinHeap_ = is_min_heap;
+    elements_.resize(1);
+  }
+  BinaryHeap(std::vector<std::pair<int, size_t>>& values,
+             bool is_min_heap = true) {
+    isMinHeap_ = is_min_heap;
+    elements_ = values;
+    for (int i = elements_.size() - 1; i >= 1; --i) {
+      SiftDown(i);
+    }
+  }
+  std::pair<int, size_t> GetRoot() {
+    ExtractDeletedRoots();
+    if (elements_.size() > 1) {
+      return elements_[1];
+    }
+    return {kErrorCode, -1};
+  }
+  void ExtractRoot() {
+    ExtractDeletedRoots();
+    if (elements_.size() > 1) {
+      std::swap(elements_[1], elements_[elements_.size() - 1]);
+      elements_.pop_back();
+      SiftDown(1);
+    }
+  }
+  void Insert(std::pair<int, size_t>& value) {
+    elements_.push_back(value);
+    SiftUp(elements_.size() - 1);
+  }
+  size_t Size() { return elements_.size() - 1 - deleted_indexes_.size(); }
+  void Clear() {
+    elements_.resize(1);
+    deleted_indexes_.clear();
+  }
+  void AddDeletedIndex(size_t index) { deleted_indexes_.insert(index); }
 };
 
-void Heap::SiftDown(size_t index) {
-  size_t left_child_index = index * 2 + 1;
-  size_t right_child_index = index * 2 + 2;
-  if (left_child_index >= elements.size()) {
-    return;
-  } else if (right_child_index >= elements.size()) {
-    if (elements[index] < elements[left_child_index]) {
-      std::swap(elements[left_child_index], elements[index]);
-      SiftDown(left_child_index);
-    }
+class MinMaxHeap {
+ private:
+  BinaryHeap MinHeap_;
+  BinaryHeap MaxHeap_;
+  size_t index_;
+
+ public:
+  MinMaxHeap() {
+    MinHeap_ = BinaryHeap();
+    MaxHeap_ = BinaryHeap(false);
+    index_ = 0;
+  }
+  void Insert(int value) {
+    std::pair<int, size_t> to_insert = {value, index_++};
+    MinHeap_.Insert(to_insert);
+    MaxHeap_.Insert(to_insert);
+  }
+
+  int ExtractMin() {
+    auto answer = MinHeap_.GetRoot();
+    MinHeap_.ExtractRoot();
+    MaxHeap_.AddDeletedIndex(answer.second);
+    return answer.first;
+  }
+  int GetMin() {
+    auto answer = MinHeap_.GetRoot();
+    return answer.first;
+  }
+  int ExtractMax() {
+    auto answer = MaxHeap_.GetRoot();
+    MaxHeap_.ExtractRoot();
+    MinHeap_.AddDeletedIndex(answer.second);
+    return answer.first;
+  }
+  int GetMax() {
+    auto answer = MaxHeap_.GetRoot();
+    return answer.first;
+  }
+  int Size() { return MinHeap_.Size(); }
+  void Clear() {
+    MinHeap_.Clear();
+    MaxHeap_.Clear();
+  }
+};
+
+void PrintAnswer(int ans) {
+  if (ans == kErrorCode) {
+    std::cout << "error" << std::endl;
   } else {
-    if (elements[index] > elements[right_child_index]) {
-      std::swap(elements[index], elements[right_child_index]);
-      SiftDown(right_child_index);
-    } else if (elements[index] < elements[left_child_index]) {
-      std::swap(elements[index], elements[left_child_index]);
-      SiftDown(left_child_index);
-    }
-    SiftDown(index);
+    std::cout << ans << std::endl;
   }
 }
-
-size_t Heap::SiftUp(size_t index) {
-  if (index == 0) {
-    return index;
-  }
-  size_t parent_index = (index - 1) / 2;
-  bool is_left_child = true;
-  if (parent_index * 2 + 1 != index) {
-    is_left_child = false;
-  }
-  if ((is_left_child && elements[index] > elements[parent_index]) ||
-      (!is_left_child && elements[index] < elements[parent_index])) {
-    std::swap(elements[index], elements[parent_index]);
-    return SiftUp(parent_index);
-  }
-  return index;
-}
-
-size_t Heap::Size() { return elements.size(); }
-
-void Heap::Insert(int value) {
-  elements.push_back(value);
-  size_t stopped_at = SiftUp(elements.size() - 1);
-  SiftDown(stopped_at);
-}
-
-Heap::Heap() { elements.resize(0); }
-
-Heap Make_Heap(std::vector<int>& vec) {
-  size_t root_index = QuickSelect::QuickSelect(vec, vec.size() / 2).second;
-  Heap answer;
-  answer.Insert(vec[root_index]);
-  for (size_t i = 0; i < vec.size(); ++i) {
-    if (i != root_index) {
-      answer.Insert(vec[i]);
-    }
-  }
-  return answer;
-}
-
-int Heap::GetMin() {
-  size_t cur_index = 0;
-  size_t left_child_index = cur_index * 2 + 1;
-  while (left_child_index < elements.size()) {
-    cur_index = left_child_index;
-    left_child_index = cur_index * 2 + 1;
-  }
-  return elements[left_child_index];
-}
-
-int Heap::GetMax() {
-  size_t cur_index = 0;
-  size_t right_child_index = cur_index * 2 + 2;
-  while (right_child_index < elements.size()) {
-    cur_index = right_child_index;
-    right_child_index = cur_index * 2 + 1;
-  }
-  return elements[right_child_index];
-}
-
-
-
-
-
-}  // namespace Heap
 
 int main() {
-  
+  size_t amount_of_questions;
+  std::cin >> amount_of_questions;
+  MinMaxHeap heap;
+  for (size_t step = 0; step < amount_of_questions; ++step) {
+    std::string command;
+    std::cin >> command;
+    if (command == "insert") {
+      int value;
+      std::cin >> value;
+      heap.Insert(value);
+      std::cout << "ok" << std::endl;
+    } else if (command == "extract_min") {
+      auto ans = heap.ExtractMin();
+      PrintAnswer(ans);
+    } else if (command == "get_min") {
+      auto ans = heap.GetMin();
+      PrintAnswer(ans);
+    } else if (command == "extract_max") {
+      auto ans = heap.ExtractMax();
+      PrintAnswer(ans);
+    } else if (command == "get_max") {
+      auto ans = heap.GetMax();
+      PrintAnswer(ans);
+    } else if (command == "size") {
+      auto ans = heap.Size();
+      std::cout << ans << std::endl;
+    } else if (command == "clear") {
+      heap.Clear();
+      std::cout << "ok" << std::endl;
+    }
+  }
 }
-
-
-
-
-
