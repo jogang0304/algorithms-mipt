@@ -81,6 +81,20 @@ class BinaryHeap {
   }
 };
 
+void ChangeMaxElementToNew(BinaryHeap& max_heap, BinaryHeap& min_heap,
+                           int new_a) {
+  auto max_element_in_heap = max_heap.GetRoot();
+  size_t index_in_min_heap = 0;
+  while (min_heap[index_in_min_heap] != max_element_in_heap) {
+    ++index_in_min_heap;
+  }
+  min_heap.DecreaseKey(index_in_min_heap, max_element_in_heap + 1);
+  min_heap.ExtractRoot();
+  max_heap.ExtractRoot();
+  min_heap.Insert(new_a);
+  max_heap.Insert(new_a);
+}
+
 int main() {
   size_t sequence_length;
   size_t needed_amount;
@@ -99,18 +113,9 @@ int main() {
       min_heap.Insert(new_a);
       max_heap.Insert(new_a);
     } else if (new_a < max_heap.GetRoot()) {
-      auto max_element_in_heap = max_heap.GetRoot();
-      size_t index_in_min_heap = 0;
-      while (min_heap[index_in_min_heap] != max_element_in_heap) {
-        ++index_in_min_heap;
-      }
-      min_heap.DecreaseKey(index_in_min_heap, max_element_in_heap + 1);
-      min_heap.ExtractRoot();
-      max_heap.ExtractRoot();
-      min_heap.Insert(new_a);
-      max_heap.Insert(new_a);
+      ChangeMaxElementToNew(max_heap, min_heap, new_a);
     }
-    last_a = new_a;
+    last_a = static_cast<long long>(new_a);
   }
   while (min_heap.Size() > 0) {
     std::cout << min_heap.GetRoot() << " ";
