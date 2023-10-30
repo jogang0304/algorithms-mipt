@@ -77,8 +77,53 @@ class QueueThroughStack {
 };
 
 int main() {
-  int n;
-  int L;
-  std::cin >> n >> L;
-  std::vector<std::vector<int>>
+  int matrix_size;
+  int submatrix_size;
+  std::cin >> matrix_size >> submatrix_size;
+  std::vector<std::vector<int>> matrix(matrix_size,
+                                       std::vector<int>(matrix_size, 0));
+  for (auto& row : matrix) {
+    for (auto& element : row) {
+      std::cin >> element;
+    }
+  }
+  // минимум в столбце высоты L, начинающемся в i, j.
+  std::vector<std::vector<int>> l_column_mins(matrix_size - submatrix_size + 1,
+                                              std::vector<int>(matrix_size, 0));
+  QueueThroughStack queue;
+  for (int j = 0; j < matrix_size; ++j) {
+    queue.Clear();
+    for (int i = 0; i < submatrix_size - 1; ++i) {
+      queue.Push(matrix[i][j]);
+    }
+    for (int i = 0; i < matrix_size - submatrix_size + 1; ++i) {
+      if (queue.Size() >= submatrix_size) {
+        queue.Pop();
+      }
+      queue.Push(matrix[i + submatrix_size - 1][j]);
+      l_column_mins[i][j] = queue.Min();
+    }
+  }
+  std::vector<std::vector<int>> submatrix_min(
+      matrix_size - submatrix_size + 1,
+      std::vector<int>(matrix_size - submatrix_size + 1, 0));
+  for (int i = 0; i < matrix_size - submatrix_size + 1; ++i) {
+    queue.Clear();
+    for (int j = 0; j < submatrix_size - 1; ++j) {
+      queue.Push(l_column_mins[i][j]);
+    }
+    for (int j = 0; j < matrix_size - submatrix_size + 1; ++j) {
+      if (queue.Size() >= submatrix_size) {
+        queue.Pop();
+      }
+      queue.Push(l_column_mins[i][j + submatrix_size - 1]);
+      submatrix_min[i][j] = queue.Min();
+    }
+  }
+  for (auto& row : submatrix_min) {
+    for (auto& element : row) {
+      std::cout << element << " ";
+    }
+    std::cout << "\n";
+  }
 }
