@@ -13,6 +13,7 @@ class QueueThroughStack {
   std::stack<int> stack2_;
   std::stack<int> stack1_min_;
   std::stack<int> stack2_min_;
+
   void MoveStack1ToStack2() {
     while (!stack1_.empty()) {
       stack2_.push(stack1_.top());
@@ -36,6 +37,7 @@ class QueueThroughStack {
       stack1_min_.push(number);
     }
   }
+
   int Pop() {
     if (stack2_.empty() && stack1_.empty()) {
       return kErrorCode;
@@ -48,6 +50,7 @@ class QueueThroughStack {
     stack2_min_.pop();
     return answer;
   }
+
   int Front() {
     if (stack2_.empty() && stack1_.empty()) {
       return kErrorCode;
@@ -57,7 +60,9 @@ class QueueThroughStack {
     }
     return stack2_.top();
   }
+
   int Size() { return stack1_.size() + stack2_.size(); }
+
   int Min() {
     if (stack1_min_.empty() && stack2_min_.empty()) {
       return kErrorCode;
@@ -70,6 +75,7 @@ class QueueThroughStack {
     }
     return std::min(stack1_min_.top(), stack2_min_.top());
   }
+
   void Clear() {
     stack1_ = std::stack<int>();
     stack1_min_ = std::stack<int>();
@@ -84,19 +90,30 @@ class Hat {
 
  public:
   Hat() {}
+
   void Enqueue(int number) {
     queue_.Push(number);
     std::cout << "ok" << std::endl;
   }
+
   int Dequeue() { return queue_.Pop(); }
+
   int Front() { return queue_.Front(); }
+
   int Size() { return queue_.Size(); }
+
   int Min() { return queue_.Min(); }
+
   void Clear() {
     queue_.Clear();
     std::cout << "ok" << std::endl;
   }
 };
+
+void Print(int answer) {
+  std::cout << (answer == kErrorCode ? "error" : std::to_string(answer))
+            << std::endl;
+}
 
 int main() {
   int amount_of_commands;
@@ -110,23 +127,15 @@ int main() {
       std::cin >> number;
       hat.Enqueue(number);
     } else if (command == "dequeue") {
-      int answer = hat.Dequeue();
-      std::cout << (answer == kErrorCode ? "error" : std::to_string(answer))
-                << std::endl;
+      Print(hat.Dequeue());
     } else if (command == "front") {
-      int answer = hat.Front();
-      std::cout << (answer == kErrorCode ? "error" : std::to_string(answer))
-                << std::endl;
+      Print(hat.Front());
     } else if (command == "size") {
-      int answer = hat.Size();
-      std::cout << (answer == kErrorCode ? "error" : std::to_string(answer))
-                << std::endl;
+      Print(hat.Size());
     } else if (command == "clear") {
       hat.Clear();
     } else if (command == "min") {
-      int answer = hat.Min();
-      std::cout << (answer == kErrorCode ? "error" : std::to_string(answer))
-                << std::endl;
+      Print(hat.Min());
     }
   }
 }
