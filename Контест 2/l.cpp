@@ -27,72 +27,86 @@ class QueueThroughStack {
   std::stack<El> stack2_;
   std::stack<El> stack1_max_;
   std::stack<El> stack2_max_;
-  void MoveStack1ToStack2() {
-    while (!stack1_.empty()) {
-      stack2_.push(stack1_.top());
-      if (!stack2_max_.empty()) {
-        if (stack2_max_.top().value >= stack1_.top().value) {
-          stack2_max_.push(stack2_max_.top());
-        } else {
-          stack2_max_.push(stack1_.top());
-        }
-      } else {
-        stack2_max_.push(stack1_.top());
-      }
-      stack1_.pop();
-      stack1_max_.pop();
-    }
-  }
+  void MoveStack1ToStack2();
 
  public:
   QueueThroughStack() {}
-  void Push(El number) {
-    stack1_.push(number);
-    if (!stack1_max_.empty()) {
-      if (stack1_max_.top().value >= number.value) {
-        stack1_max_.push(stack1_max_.top());
+  void Push(El number);
+  int Pop();
+  int Size();
+  El Max();
+  void Clear();
+};
+
+void QueueThroughStack::MoveStack1ToStack2() {
+  while (!stack1_.empty()) {
+    stack2_.push(stack1_.top());
+    if (!stack2_max_.empty()) {
+      if (stack2_max_.top().value >= stack1_.top().value) {
+        stack2_max_.push(stack2_max_.top());
       } else {
-        stack1_max_.push(number);
+        stack2_max_.push(stack1_.top());
       }
+    } else {
+      stack2_max_.push(stack1_.top());
+    }
+    stack1_.pop();
+    stack1_max_.pop();
+  }
+}
+
+void QueueThroughStack::Push(El number) {
+  stack1_.push(number);
+  if (!stack1_max_.empty()) {
+    if (stack1_max_.top().value >= number.value) {
+      stack1_max_.push(stack1_max_.top());
     } else {
       stack1_max_.push(number);
     }
+  } else {
+    stack1_max_.push(number);
   }
-  int Pop() {
-    if (stack2_.empty() && stack1_.empty()) {
-      return kErrorCode;
-    }
-    if (stack2_.empty()) {
-      MoveStack1ToStack2();
-    }
-    El answer = stack2_.top();
-    stack2_.pop();
-    stack2_max_.pop();
-    return answer.value;
+}
+
+int QueueThroughStack::Pop() {
+  if (stack2_.empty() && stack1_.empty()) {
+    return kErrorCode;
   }
-  int Size() { return stack1_.size() + stack2_.size(); }
-  El Max() {
-    if (stack1_max_.empty() && stack2_max_.empty()) {
-      return {kErrorCode, 0, 0, 0};
-    }
-    if (stack1_max_.empty()) {
-      return stack2_max_.top();
-    }
-    if (stack2_max_.empty()) {
-      return stack1_max_.top();
-    }
-    if (stack1_max_.top().value >= stack2_max_.top().value) {
-      return stack1_max_.top();
-    }
+  if (stack2_.empty()) {
+    MoveStack1ToStack2();
+  }
+  El answer = stack2_.top();
+  stack2_.pop();
+  stack2_max_.pop();
+  return answer.value;
+}
+
+int QueueThroughStack::Size() {
+  return static_cast<int>(stack1_.size() + stack2_.size());
+}
+
+El QueueThroughStack::Max() {
+  if (stack1_max_.empty() && stack2_max_.empty()) {
+    return {kErrorCode, 0, 0, 0};
+  }
+  if (stack1_max_.empty()) {
     return stack2_max_.top();
   }
-  void Clear() {
-    stack1_ = std::stack<El>();
-    stack1_max_ = std::stack<El>();
-    stack2_ = std::stack<El>();
-    stack2_max_ = std::stack<El>();
+  if (stack2_max_.empty()) {
+    return stack1_max_.top();
   }
-};
+  if (stack1_max_.top().value >= stack2_max_.top().value) {
+    return stack1_max_.top();
+  }
+  return stack2_max_.top();
+}
+
+void QueueThroughStack::Clear() {
+  stack1_ = std::stack<El>();
+  stack1_max_ = std::stack<El>();
+  stack2_ = std::stack<El>();
+  stack2_max_ = std::stack<El>();
+}
 
 void CountSubcolumn(std::vector<std::vector<std::vector<El>>>& subcolumn_min,
                     QueueThroughStack& queue,
