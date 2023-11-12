@@ -5,52 +5,6 @@
 const long long kErrorCode = -10;
 
 class BinaryHeap {
- private:
-  bool isMinHeap_;
-  std::vector<std::pair<long long, size_t>> elements_;
-  std::set<size_t> deleted_indexes_;
-  inline static bool CompareForMinHeap(std::pair<long long, size_t>& left,
-                                       std::pair<long long, size_t>& right) {
-    return left.first < right.first;
-  }
-  void SiftUp(size_t index) {
-    if (index <= 1) {
-      return;
-    }
-    size_t parent_index = index / 2;
-    if (isMinHeap_ ==
-        CompareForMinHeap(elements_[index], elements_[parent_index])) {
-      std::swap(elements_[index], elements_[parent_index]);
-      SiftUp(parent_index);
-    }
-  }
-  void SiftDown(size_t index) {
-    if (2 * index > elements_.size() - 1) {
-      return;
-    }
-    size_t child_index = 2 * index;
-    if (2 * index + 1 <= elements_.size() - 1 &&
-        (isMinHeap_ ==
-         CompareForMinHeap(elements_[2 * index + 1], elements_[2 * index]))) {
-      child_index = 2 * index + 1;
-    }
-    if (isMinHeap_ ==
-        CompareForMinHeap(elements_[child_index], elements_[index])) {
-      std::swap(elements_[child_index], elements_[index]);
-      SiftDown(child_index);
-    }
-  }
-  void ExtractDeletedRoots() {
-    while (true) {
-      if (deleted_indexes_.find(elements_[1].second) ==
-          deleted_indexes_.end()) {
-        break;
-      }
-      deleted_indexes_.erase(elements_[1].second);
-      this->ExtractRoot();
-    }
-  }
-
  public:
   BinaryHeap(bool is_min_heap = true) {
     isMinHeap_ = is_min_heap;
@@ -93,14 +47,54 @@ class BinaryHeap {
     deleted_indexes_.clear();
   }
   void AddDeletedIndex(size_t index) { deleted_indexes_.insert(index); }
+
+ private:
+  inline static bool CompareForMinHeap(std::pair<long long, size_t>& left,
+                                       std::pair<long long, size_t>& right) {
+    return left.first < right.first;
+  }
+  void SiftUp(size_t index) {
+    if (index <= 1) {
+      return;
+    }
+    size_t parent_index = index / 2;
+    if (isMinHeap_ ==
+        CompareForMinHeap(elements_[index], elements_[parent_index])) {
+      std::swap(elements_[index], elements_[parent_index]);
+      SiftUp(parent_index);
+    }
+  }
+  void SiftDown(size_t index) {
+    if (2 * index > elements_.size() - 1) {
+      return;
+    }
+    size_t child_index = 2 * index;
+    if (2 * index + 1 <= elements_.size() - 1 &&
+        (isMinHeap_ ==
+         CompareForMinHeap(elements_[2 * index + 1], elements_[2 * index]))) {
+      child_index = 2 * index + 1;
+    }
+    if (isMinHeap_ ==
+        CompareForMinHeap(elements_[child_index], elements_[index])) {
+      std::swap(elements_[child_index], elements_[index]);
+      SiftDown(child_index);
+    }
+  }
+  void ExtractDeletedRoots() {
+    while (deleted_indexes_.find(elements_[1].second) !=
+           deleted_indexes_.end()) {
+      deleted_indexes_.erase(elements_[1].second);
+      this->ExtractRoot();
+    }
+  }
+
+ private:
+  bool isMinHeap_;
+  std::vector<std::pair<long long, size_t>> elements_;
+  std::set<size_t> deleted_indexes_;
 };
 
 class MinMaxHeap {
- private:
-  BinaryHeap MinHeap_;
-  BinaryHeap MaxHeap_;
-  size_t index_;
-
  public:
   MinMaxHeap() {
     MinHeap_ = BinaryHeap();
@@ -142,6 +136,11 @@ class MinMaxHeap {
     MinHeap_.Clear();
     MaxHeap_.Clear();
   }
+
+ private:
+  BinaryHeap MinHeap_;
+  BinaryHeap MaxHeap_;
+  size_t index_;
 };
 
 void PrintAnswer(long long ans) {
