@@ -6,42 +6,6 @@ const size_t kMaxElementsInHeap = 100'001;
 const size_t kMaxAmountOfQuestions = 1'000'001;
 
 class BinaryHeap {
- private:
-  std::vector<long long> elements_;
-  std::vector<size_t> map_step_to_index_;
-  std::vector<size_t> map_index_to_step_;
-  void SwapMaps(size_t left_index, size_t right_index) {
-    std::swap(map_step_to_index_[map_index_to_step_[right_index]],
-              map_step_to_index_[map_index_to_step_[left_index]]);
-    std::swap(map_index_to_step_[right_index], map_index_to_step_[left_index]);
-  }
-  void SiftUp(size_t index) {
-    if (index <= 1) {
-      return;
-    }
-    long long parent_index = index / 2;
-    if (elements_[index] < elements_[parent_index]) {
-      std::swap(elements_[index], elements_[parent_index]);
-      SwapMaps(index, parent_index);
-      SiftUp(parent_index);
-    }
-  }
-  void SiftDown(size_t index) {
-    if (2 * index > elements_.size() - 1) {
-      return;
-    }
-    long long child_index = 2 * index;
-    if (2 * index + 1 <= elements_.size() - 1 &&
-        elements_[2 * index + 1] < elements_[2 * index]) {
-      child_index = 2 * index + 1;
-    }
-    if (elements_[child_index] < elements_[index]) {
-      std::swap(elements_[child_index], elements_[index]);
-      SwapMaps(child_index, index);
-      SiftDown(child_index);
-    }
-  }
-
  public:
   BinaryHeap() {
     map_index_to_step_.resize(kMaxElementsInHeap);
@@ -75,6 +39,44 @@ class BinaryHeap {
     elements_[map_step_to_index_[step]] -= delta;
     SiftUp(map_step_to_index_[step]);
   }
+
+ private:
+  void SwapMaps(size_t left_index, size_t right_index) {
+    std::swap(map_step_to_index_[map_index_to_step_[right_index]],
+              map_step_to_index_[map_index_to_step_[left_index]]);
+    std::swap(map_index_to_step_[right_index], map_index_to_step_[left_index]);
+  }
+  void SiftUp(size_t index) {
+    if (index <= 1) {
+      return;
+    }
+    long long parent_index = index / 2;
+    if (elements_[index] < elements_[parent_index]) {
+      std::swap(elements_[index], elements_[parent_index]);
+      SwapMaps(index, parent_index);
+      SiftUp(parent_index);
+    }
+  }
+  void SiftDown(size_t index) {
+    if (2 * index > elements_.size() - 1) {
+      return;
+    }
+    long long child_index = 2 * index;
+    if (2 * index + 1 <= elements_.size() - 1 &&
+        elements_[2 * index + 1] < elements_[2 * index]) {
+      child_index = 2 * index + 1;
+    }
+    if (elements_[child_index] < elements_[index]) {
+      std::swap(elements_[child_index], elements_[index]);
+      SwapMaps(child_index, index);
+      SiftDown(child_index);
+    }
+  }
+
+ private:
+  std::vector<long long> elements_;
+  std::vector<size_t> map_step_to_index_;
+  std::vector<size_t> map_index_to_step_;
 };
 
 int main() {
