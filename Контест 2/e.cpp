@@ -22,8 +22,6 @@ std::vector<std::pair<int, int>> Merge(std::vector<std::pair<int, int>>& values,
         answer[values[left_part_index].second] += (right_part_index - medium);
         sorted_array.push_back(values[left_part_index++]);
       } else {
-        // answer[values[left_part_index].second] +=
-        //     (1) /*(medium - left_part_index)*/;
         sorted_array.push_back(values[right_part_index++]);
       }
     } else if (left_part_index < medium) {
@@ -36,7 +34,6 @@ std::vector<std::pair<int, int>> Merge(std::vector<std::pair<int, int>>& values,
   return sorted_array;
 }
 
-// сортирует отрезок с индексами [left, right)
 void MergeSort(std::vector<std::pair<int, int>>& values,
                std::vector<int>& answers, size_t left = 0, size_t right = 0) {
   if (right == 0) {
