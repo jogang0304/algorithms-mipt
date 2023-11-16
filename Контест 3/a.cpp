@@ -2,126 +2,105 @@
 #include <iostream>
 #include <vector>
 
-const int kMaxPeople = 100000;
+const int kNull = -1;
+const int kMaxUsers = 100000;
+const int kMaxPage = 42195;
 
-class SortTree {
- public:
-  SortTree(int size = kMaxPeople);
-  void Update(int person, int value, int tree_index, int tree_left,
-              int tree_right);
-  int CountLessThan(int value);
+inline int AndHelper(int number) { return number & (number + 1); }
+inline int OrHelper(int number) { return number | (number + 1); }
 
-  double Cheer(int person);
-
+class FenwickTree {
  private:
-  std::vector<std::vector<int>> nodes_;
-  std::vector<int> people;
+  std::vector<int> array_;
 
-  std::vector<int> Merge_(int first_node, int second_node);
+ public:
+  FenwickTree(int size) : array_(size, 0) {}
+
+  void Add(int number) {
+    for (int i = number; i < static_cast<int>(array_.size()); i = OrHelper(i)) {
+      array_[i] += 1;
+    }
+  }
+
+  void Decrease(int number) {
+    for (int i = number; i < static_cast<int>(array_.size()); i = OrHelper(i)) {
+      array_[i] -= 1;
+    }
+  }
+
+  int GetSum(int left, int right) {
+    int right_sum = 0;
+    for (int i = right - 1; i >= 0; i = AndHelper(i) - 1) {
+      right_sum += array_[i];
+    }
+    int left_sum = 0;
+    for (int i = left - 1; i >= 0; i = AndHelper(i) - 1) {
+      left_sum += array_[i];
+    }
+    return right_sum - left_sum;
+  }
 };
 
-SortTree::SortTree(int size) {
-  nodes_.resize(size * 4, std::vector<int>(0));
-  people.resize(size, 0);
-}
+class Map {
+ private:
+  std::vector<int> array_;
+  int size_;
 
-std::vector<int> SortTree::Merge_(int first_node, int second_node) {
-  std::vector<int> result(0);
-  int first_index = 0;
-  int second_index = 0;
-  while (first_index < nodes_[first_node].size() ||
-         second_index < nodes_[second_node].size()) {
-    if (first_index < nodes_[first_node].size() &&
-        second_index < nodes_[second_node].size()) {
-      if (nodes_[first_node][first_index] <=
-          nodes_[second_node][second_index]) {
-        result.push_back(nodes_[first_node][first_index++]);
-      } else {
-        result.push_back(nodes_[second_node][second_index++]);
+ public:
+  Map(int size) : array_(size, kNull), size_(0) {}
+
+  int Get(int index) const {
+    if (index < static_cast<int>(array_.size())) {
+      return array_[index];
+    }
+    return kNull;
+  }
+
+  void Set(int index, int number) {
+    if (index < static_cast<int>(array_.size())) {
+      if (array_[index] == kNull) {
+        ++size_;
       }
-    } else if (first_index < nodes_[first_node].size()) {
-      result.push_back(nodes_[first_node][first_index++]);
-    } else {
-      result.push_back(nodes_[second_node][second_index++]);
+      array_[index] = number;
     }
   }
-  return result;
-}
 
-void SortTree::Update(int person, int value, int tree_index = 0,
-                      int tree_left = 0, int tree_right = -1) {
-  if (tree_right == -1) {
-    tree_right = people.size();
-  }
-  if (tree_left >= tree_right) {
-    return;
-  }
-  if (tree_left + 1 == tree_right) {
-    people[person] = value;
-    nodes_[tree_index] = {value};
-    return;
-  }
-  int tree_middle = (tree_right + tree_left) / 2;
-  if (person < tree_middle) {
-    Update(person, value, tree_index * 2 + 1, tree_left, tree_middle);
-  } else {
-    Update(person, value, tree_index * 2 + 2, tree_middle, tree_right);
-  }
-  nodes_[tree_index] = Merge_(tree_index * 2 + 1, tree_index * 2 + 2);
-}
-
-int SortTree::CountLessThan(int value) {
-  int index_of_first_ge_1 = 0;
-  int left = 0;
-  int right = nodes_[0].size();
-  while (right - left > 1) {
-    int middle = (left + right) / 2;
-    if (nodes_[0][middle] < 1) {
-      left = middle;
-    } else {
-      right = middle;
-    }
-  }
-  index_of_first_ge_1 = right;
-  int index_of_first_ge_x = 0;
-  left = 0;
-  right = nodes_[0].size();
-  while (right - left > 1) {
-    int middle = (left + right) / 2;
-    if (nodes_[0][middle] >= value) {
-      right = middle;
-    } else {
-      left = middle;
-    }
-  }
-  index_of_first_ge_x = right;
-  int answer = index_of_first_ge_x - index_of_first_ge_1;
-  return answer;
-}
-
-double SortTree::Cheer(int person) {
-  int passing_people = CountLessThan(people[person]);
-  double all_people = static_cast<double>(people.size());
-  double answer = passing_people / all_people;
-  return answer;
-}
+  int Size() const { return size_; }
+};
 
 int main() {
   int amount_of_questions;
   std::cin >> amount_of_questions;
-  SortTree tree;
-  for (int step = 0; step < amount_of_questions; step++) {
+  Map map(kMaxUsers + 1);
+  FenwickTree tree(kMaxPage + 1);
+  for (int question = 0; question < amount_of_questions; ++question) {
     std::string command;
     std::cin >> command;
     if (command == "CHEER") {
-      int person;
-      std::cin >> person;
-      std::cout << tree.Cheer(person) << std::endl;
+      int user;
+      std::cin >> user;
+      double answer = 0;
+      int user_page = map.Get(user);
+      if (user_page != kNull) {
+        if (map.Size() == 1) {
+          answer = 1;
+        } else {
+          int less_than_user = tree.GetSum(0, user_page);
+          int all_users = map.Size();
+          answer = static_cast<double>(less_than_user) / (all_users - 1);
+        }
+      }
+      std::cout << answer << "\n";
     } else {
-      int person;
-      int value;
-      std::cin >> person >> value;
-      tree.Update(person, value);
+      int user;
+      int page;
+      std::cin >> user >> page;
+      tree.Add(page);
+      int user_page = map.Get(user);
+      if (user_page != kNull) {
+        tree.Decrease(user_page);
+      }
+      map.Set(user, page);
     }
   }
 }
