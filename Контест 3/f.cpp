@@ -2,75 +2,92 @@
 #include <iostream>
 #include <vector>
 
-inline int AndHelper(int number) { return (number & (number + 1)); }
-inline int OrHelper(int number) { return (number | (number + 1)); }
-
-class DoubleFenwick {
- public:
-  DoubleFenwick(size_t height, size_t width)
-      : sums_(height + 1, std::vector<int>(width + 1, 0)) {}
-  void Add(int index, int compare_value, int value);
-  int Get(int left_index, int right_index, int min_value, int max_value);
-
- private:
-  std::vector<std::vector<int>> sums_;
+struct Node {
+  std::vector<int> array;
 };
 
-void DoubleFenwick::Add(int index, int compare_value, int value) {
-  for (int i = index; i < static_cast<int>(sums_.size()); i = OrHelper(i)) {
-    for (int j = compare_value; j < static_cast<int>(sums_[i].size());
-         j = OrHelper(j)) {
-      sums_[i][j] += value;
-    }
-  }
-}
+struct Request {
+  int left_index;
+  int right_index;
+  int min_value;
+  int max_value;
+};
 
-int DoubleFenwick::Get(int left_index, int right_index, int min_value,
-                       int max_value) {
-  int prefix22 = 0;
-  for (int i = right_index; i >= 0; i = AndHelper(i) - 1) {
-    for (int j = max_value; j >= 0; j = AndHelper(j) - 1) {
-      prefix22 += sums_[i][j];
+class SortTree {
+ public:
+  SortTree(std::vector<int>& array)
+      : tree_(array.size() * 4), array_size_(array.size()) {
+    Build(array);
+  }
+
+  int Get(Request& request, int tree_index = 0, int tree_left = 0,
+          int tree_right = 0) {
+    if (tree_right == 0) {
+      tree_right = array_size_;
+    }
+    if (request.left_index >= tree_right || request.right_index <= tree_left) {
+      return 0;
+    }
+    if (request.left_index <= tree_left && request.right_index >= tree_right) {
+      int right_passing_index =
+          std::upper_bound(tree_[tree_index].array.begin(),
+                           tree_[tree_index].array.end(), request.max_value) -
+          tree_[tree_index].array.begin();
+      int left_passing_index =
+          std::lower_bound(tree_[tree_index].array.begin(),
+                           tree_[tree_index].array.end(), request.min_value) -
+          tree_[tree_index].array.begin();
+      return right_passing_index - left_passing_index;
+    }
+    int tree_middle = (tree_left + tree_right) / 2;
+    return Get(request, tree_index * 2 + 1, tree_left, tree_middle) +
+           Get(request, tree_index * 2 + 2, tree_middle, tree_right);
+  }
+
+ private:
+  std::vector<Node> tree_;
+  int array_size_;
+  void Build(std::vector<int>& array, int tree_index = 0, int tree_left = 0,
+             int tree_right = 0) {
+    if (tree_right == 0) {
+      tree_right = array_size_;
+    }
+    if (tree_left + 1 == tree_right) {
+      tree_[tree_index].array.push_back(array[tree_left]);
+    } else {
+      int tree_middle = (tree_left + tree_right) / 2;
+      Build(array, tree_index * 2 + 1, tree_left, tree_middle);
+      Build(array, tree_index * 2 + 2, tree_middle, tree_right);
+      tree_[tree_index].array.resize(tree_[tree_index * 2 + 1].array.size() +
+                                     tree_[tree_index * 2 + 2].array.size());
+      std::merge(tree_[tree_index * 2 + 1].array.begin(),
+                 tree_[tree_index * 2 + 1].array.end(),
+                 tree_[tree_index * 2 + 2].array.begin(),
+                 tree_[tree_index * 2 + 2].array.end(),
+                 tree_[tree_index].array.begin());
     }
   }
-  int prefix12 = 0;
-  for (int i = left_index - 1; i >= 0; i = AndHelper(i) - 1) {
-    for (int j = max_value; j >= 0; j = AndHelper(j) - 1) {
-      prefix12 += sums_[i][j];
-    }
-  }
-  int prefix21 = 0;
-  for (int i = right_index; i >= 0; i = AndHelper(i) - 1) {
-    for (int j = min_value - 1; j >= 0; j = AndHelper(j) - 1) {
-      prefix21 += sums_[i][j];
-    }
-  }
-  int prefix11 = 0;
-  for (int i = left_index - 1; i >= 0; i = AndHelper(i) - 1) {
-    for (int j = min_value - 1; j >= 0; j = AndHelper(j) - 1) {
-      prefix11 += sums_[i][j];
-    }
-  }
-  return prefix22 - prefix12 - prefix21 + prefix11;
-}
+};
 
 int main() {
-  int amount_of_numbers = 0;
-  int amount_of_questions = 0;
-  std::cin >> amount_of_numbers >> amount_of_questions;
-  DoubleFenwick tree(amount_of_numbers, amount_of_numbers);
-  for (int i = 0; i < amount_of_numbers; ++i) {
-    int number;
-    std::cin >> number;
-    tree.Add(i + 1, number, 1);
+  std::ios_base::sync_with_stdio(false);
+  std::cin.tie(NULL);
+  std::cout.tie(NULL);
+  int amount_of_numbers;
+  int amount_of_requests;
+  std::cin >> amount_of_numbers >> amount_of_requests;
+  std::vector<int> array(amount_of_numbers);
+  for (auto& element : array) {
+    std::cin >> element;
   }
-  for (int step = 0; step < amount_of_questions; ++step) {
+  SortTree tree(array);
+  for (int i = 0; i < amount_of_requests; ++i) {
     int left_index;
     int right_index;
     int min_value;
     int max_value;
     std::cin >> left_index >> right_index >> min_value >> max_value;
-    std::cout << tree.Get(left_index, right_index, min_value, max_value)
-              << "\n";
+    Request request{left_index - 1, right_index, min_value, max_value};
+    std::cout << tree.Get(request) << "\n";
   }
 }
