@@ -21,10 +21,10 @@ getMin за O(1)
 
 
 Вспомогательные процедуры:
-1. siftUp(i):
+1. SiftUp(i):
   (i == 1) return
   родитель элемента с индексом i - a[i/2]
-  если (a[i] < a[i/2]) swap(a[i], a[i/2]); siftUp(i/2)
+  если (a[i] < a[i/2]) swap(a[i], a[i/2]); SiftUp(i/2)
 2. siftDown(i):
   (2i > n) return - нет детей, некуда опускать
   u = 2i
@@ -39,11 +39,11 @@ extractMin():
 insert(x):
   n += 1
   a[n] = x
-  siftUp(n)
+  SiftUp(n)
 
 decreaseKey(i, delta > 0):
   a[i] -= delta
-  siftUp(i)
+  SiftUp(i)
 
 
 добавим опреацию erase(x) (x в куче существует)
@@ -70,55 +70,58 @@ decreaseKey(i, delta > 0):
 class BinaryHeap {
  private:
   std::vector<int> s;
-  void siftUp(int i) {
+  void SiftUp(int i) {
     if (i <= 1) return;
     int p = i / 2;
     if (s[i] < s[p]) {
       std::swap(s[i], s[p]);
-      siftUp(p);
+      SiftUp(p);
     }
   }
-  void siftDown(int i) {
+  void SiftDown(int i) {
     if (2 * i > s.size() - 1) return;
     int u = 2 * i;
     if (2 * i + 1 <= s.size() - 1 && s[2 * i + 1] < s[2 * i]) u = 2 * i + 1;
     if (s[u] < s[i]) {
       std::swap(s[u], s[i]);
-      siftDown(u);
+      SiftDown(u);
     }
   }
 
  public:
   BinaryHeap() { s.resize(1); }
   BinaryHeap(std::vector<int>& values) {
-    s = values;
+    s.resize(values.size() + 1);
+    for (int i = 1; i < s.size(); ++i) {
+      s[i] = values[i - 1];
+    }
     for (int i = s.size() - 1; i >= 1; --i) {
-      siftDown(i);
+      SiftDown(i);
     }
   }
-  int getMin() {
+  int GetMin() {
     if (s.size() > 1)
       return s[1];
     else
       return 0;
   }
-  void extractMin() {
+  void ExtractMin() {
     if (s.size() > 1) {
       std::swap(s[1], s[s.size() - 1]);
       s.pop_back();
-      siftDown(1);
+      SiftDown(1);
     }
   }
-  void insert(int x) {
+  void Insert(int x) {
     s.push_back(x);
-    siftUp(s.size() - 1);
+    SiftUp(s.size() - 1);
   }
-  void decreaseKey(int i, int delta) {
+  void DecreaseKey(int i, int delta) {
     if (delta <= 0 || i < 1 || s.size() <= 1) return;
     s[i] -= delta;
-    siftUp(i);
+    SiftUp(i);
   }
-  int size() { return s.size() - 1; }
+  int Size() { return s.size() - 1; }
 
   int operator[](int i) {
     if (i < 0 || s.size() <= 1) return 0;
@@ -129,9 +132,9 @@ class BinaryHeap {
 void HeapSort(std::vector<int>& values) {
   BinaryHeap heap(values);
   int v_index = 0;
-  while (heap.size() > 0) {
-    values[v_index++] = heap.getMin();
-    heap.extractMin();
+  while (heap.Size() > 0) {
+    values[v_index++] = heap.GetMin();
+    heap.ExtractMin();
   }
 }
 
