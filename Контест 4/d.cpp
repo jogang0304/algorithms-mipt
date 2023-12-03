@@ -25,7 +25,7 @@ class RedBlackTree {
   void Delete(int value);
   int Next(int value) const;
   int Prev(int value) const;
-  int Kth(int value) const;
+  int Kth(int statistic) const;
 
   RedBlackTree() : root_(std::make_shared<Node>()) {
     root_->left_child = std::make_shared<Node>();
@@ -152,13 +152,13 @@ int RedBlackTree::Prev(int value) const {
 void RedBlackTree::RotateRight(const std::shared_ptr<Node>& current) {
   auto cur_left_child = current->left_child;
   auto cur_parent = current->parent;
-  bool const is_left_child = current == cur_parent->left_child;
+  bool const kIsLeftChild = current == cur_parent->left_child;
   current->left_child = cur_left_child->right_child;
   current->count_elements_on_left--;
   current->parent = cur_left_child;
   cur_left_child->right_child = current;
   cur_left_child->parent = cur_parent;
-  if (is_left_child) {
+  if (kIsLeftChild) {
     cur_parent->left_child = cur_left_child;
   } else {
     cur_parent->right_child = cur_left_child;
@@ -171,13 +171,13 @@ void RedBlackTree::RotateRight(const std::shared_ptr<Node>& current) {
 void RedBlackTree::RotateLeft(const std::shared_ptr<Node>& current) {
   auto cur_right_child = current->right_child;
   auto cur_parent = current->parent;
-  bool const is_left_child = current == cur_parent->left_child;
+  bool const kIsLeftChild = current == cur_parent->left_child;
   current->right_child = cur_right_child->left_child;
   current->parent = cur_right_child;
   cur_right_child->left_child = current;
   cur_right_child->count_elements_on_left++;
   cur_right_child->parent = cur_parent;
-  if (is_left_child) {
+  if (kIsLeftChild) {
     cur_parent->left_child = cur_right_child;
   } else {
     cur_parent->right_child = cur_right_child;
@@ -212,15 +212,15 @@ void RedBlackTree::Insert(int value) {
     root_->is_null = false;
     root_->is_red = false;
     return;
-  } else {
-    if (value < current->parent->value) {
-      current->parent->left_child = new_node;
-      current->parent->count_elements_on_left++;
-    } else {
-      current->parent->right_child = new_node;
-    }
-    new_node->parent = current->parent;
   }
+  if (value < current->parent->value) {
+    current->parent->left_child = new_node;
+    current->parent->count_elements_on_left++;
+  } else {
+    current->parent->right_child = new_node;
+  }
+  new_node->parent = current->parent;
+
   FixInsert(new_node);
 }
 
@@ -280,6 +280,39 @@ void FindNode(std::shared_ptr<Node>& current, int value) {
   }
 }
 
+bool SimpleDeleteCases(std::shared_ptr<Node>& current,
+                       std::shared_ptr<Node>& cur_parent,
+                       std::shared_ptr<Node>& not_null_child,
+                       std::shared_ptr<Node>& root) {
+  if (current->is_red) {
+    current = not_null_child;
+    not_null_child->parent = current->parent;
+    if (cur_parent->is_null) {
+      root = not_null_child;
+    }
+    if (cur_parent->left_child == current) {
+      cur_parent->left_child = not_null_child;
+    } else {
+      cur_parent->right_child = not_null_child;
+    }
+    return true;
+  }
+  if (!current->is_red && not_null_child->is_red) {
+    not_null_child->is_red = false;
+    not_null_child->parent = current->parent;
+    if (cur_parent->is_null) {
+      root = not_null_child;
+    }
+    if (cur_parent->left_child == current) {
+      cur_parent->left_child = not_null_child;
+    } else {
+      cur_parent->right_child = not_null_child;
+    }
+    return true;
+  }
+  return false;
+}
+
 void RedBlackTree::Delete(int value) {
   if (root_ == nullptr) {
     return;
@@ -299,30 +332,9 @@ void RedBlackTree::Delete(int value) {
 
   auto not_null_child = (current->left_child->is_null) ? current->right_child
                                                        : current->left_child;
-  if (current->is_red) {
-    current = not_null_child;
-    not_null_child->parent = current->parent;
-    if (cur_parent->is_null) {
-      root_ = not_null_child;
-    }
-    if (cur_parent->left_child == current) {
-      cur_parent->left_child = not_null_child;
-    } else {
-      cur_parent->right_child = not_null_child;
-    }
-    return;
-  }
-  if (!current->is_red && not_null_child->is_red) {
-    not_null_child->is_red = false;
-    not_null_child->parent = current->parent;
-    if (cur_parent->is_null) {
-      root_ = not_null_child;
-    }
-    if (cur_parent->left_child == current) {
-      cur_parent->left_child = not_null_child;
-    } else {
-      cur_parent->right_child = not_null_child;
-    }
+  auto simple_result =
+      SimpleDeleteCases(current, cur_parent, not_null_child, root_);
+  if (simple_result) {
     return;
   }
   not_null_child->parent = cur_parent;
@@ -409,6 +421,41 @@ int RedBlackTree::Kth(int statistic) const {
   return -kInf;
 }
 
+void HandleExists(RedBlackTree& tree, int value) {
+  if (tree.Exists(value)) {
+    std::cout << "true\n";
+    return;
+  }
+  std::cout << "false\n";
+}
+
+void HandleNext(RedBlackTree& tree, int value) {
+  auto next = tree.Next(value);
+  if (next != -kInf && next != value) {
+    std::cout << next << "\n";
+    return;
+  }
+  std::cout << "none\n";
+}
+
+void HandlePrev(RedBlackTree& tree, int value) {
+  auto prev = tree.Prev(value);
+  if (prev != -kInf && prev != value) {
+    std::cout << prev << "\n";
+    return;
+  }
+  std::cout << "none\n";
+}
+
+void HandleKth(RedBlackTree& tree, int statistic) {
+  auto result = tree.Kth(statistic);
+  if (result != -kInf) {
+    std::cout << result << "\n";
+    return;
+  }
+  std::cout << "none\n";
+}
+
 int main() {
   RedBlackTree tree;
   std::string command;
@@ -422,23 +469,16 @@ int main() {
       tree.Delete(value);
     }
     if (command == "exists") {
-      std::cout << (tree.Exists(value) ? "true" : "false") << "\n";
+      HandleExists(tree, value);
     }
     if (command == "next") {
-      int const next = tree.Next(value);
-      std::cout << (next == value || next == -kInf ? "none"
-                                                   : std::to_string(next))
-                << "\n";
+      HandleNext(tree, value);
     }
     if (command == "prev") {
-      int const prev = tree.Prev(value);
-      std::cout << (prev == value || prev == -kInf ? "none"
-                                                   : std::to_string(prev))
-                << "\n";
+      HandlePrev(tree, value);
     }
     if (command == "kth") {
-      auto result = tree.Kth(value);
-      std::cout << (result != -kInf ? std::to_string(result) : "none") << "\n";
+      HandleKth(tree, value);
     }
   }
 }
