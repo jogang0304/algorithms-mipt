@@ -1,6 +1,5 @@
 #include <algorithm>
 #include <iostream>
-#include <memory>
 #include <string>
 #include <utility>
 
@@ -8,15 +7,36 @@ const int kInf = 2'000'000'000;
 
 struct Node {
  public:
-  std::shared_ptr<Node> left_child;
-  std::shared_ptr<Node> right_child;
-  std::shared_ptr<Node> parent;
+  Node* left_child = nullptr;
+  Node* right_child = nullptr;
+  Node* parent = nullptr;
   int value = -1;
   bool is_red = false;
   bool is_null = true;
   int count_elements_on_left = 0;
-  Node() : left_child(nullptr), right_child(nullptr), parent(nullptr) {}
+  Node() {}
+  ~Node() {
+    if (left_child != nullptr) {
+      left_child->parent = nullptr;
+      delete left_child;
+      left_child = nullptr;
+    }
+    if (right_child != nullptr) {
+      right_child->parent = nullptr;
+      delete right_child;
+      right_child = nullptr;
+    }
+  }
 };
+
+void DeleteNodeParent(Node* node) {
+  if (node->parent->left_child == node) {
+    node->parent->left_child = nullptr;
+  } else if (node->parent->right_child == node) {
+    node->parent->right_child = nullptr;
+  }
+  delete node->parent;
+}
 
 class RedBlackTree {
  public:
@@ -27,39 +47,51 @@ class RedBlackTree {
   int Prev(int value) const;
   int Kth(int statistic) const;
 
-  RedBlackTree() : root_(std::make_shared<Node>()) {
-    root_->left_child = std::make_shared<Node>();
-    root_->right_child = std::make_shared<Node>();
+  RedBlackTree() : root_(new Node()) {
+    delete root_->left_child;
+    root_->left_child = new Node();
+    delete root_->right_child;
+    root_->right_child = new Node();
+    delete root_->left_child->parent;
     root_->left_child->parent = root_;
+    delete root_->right_child->parent;
     root_->right_child->parent = root_;
-    root_->parent = std::make_shared<Node>();
+    delete root_->parent;
+    root_->parent = new Node();
+  }
+
+  ~RedBlackTree() {
+    if (root_->parent->left_child == root_) {
+      root_->parent->left_child = nullptr;
+    } else if (root_->parent->right_child == root_) {
+      root_->parent->right_child = nullptr;
+    }
+    delete root_->parent;
+    delete root_;
   }
 
  private:
-  std::shared_ptr<Node> root_;
+  Node* root_;
 
-  void RotateLeft(const std::shared_ptr<Node>& current);
-  void RotateRight(const std::shared_ptr<Node>& current);
-  void FixInsert(const std::shared_ptr<Node>& current);
-  void FixDelete(const std::shared_ptr<Node>& current);
+  void RotateLeft(Node* current);
+  void RotateRight(Node* current);
+  void FixInsert(Node* current);
+  void FixDelete(Node* current);
 
-  static std::shared_ptr<Node> GetParent(const std::shared_ptr<Node>& current);
-  static std::shared_ptr<Node> GetGrandparent(
-      const std::shared_ptr<Node>& current);
-  static std::shared_ptr<Node> GetUncle(const std::shared_ptr<Node>& current);
-  static std::shared_ptr<Node> GetBrother(const std::shared_ptr<Node>& current);
+  static Node* GetParent(Node* current);
+  static Node* GetGrandparent(Node* current);
+  static Node* GetUncle(Node* current);
+  static Node* GetBrother(Node* current);
 };
 
-std::shared_ptr<Node> RedBlackTree::GetParent(
-    const std::shared_ptr<Node>& current) {
+Node* RedBlackTree::GetParent(Node* current) {
   if (current == nullptr || current->parent == nullptr) {
     return nullptr;
   }
   return current->parent;
 }
 
-std::shared_ptr<Node> RedBlackTree::GetGrandparent(
-    const std::shared_ptr<Node>& current) {
+Node* RedBlackTree::GetGrandparent(Node* current) {
   if (current == nullptr || current->parent == nullptr ||
       current->parent->parent == nullptr) {
     return nullptr;
@@ -67,35 +99,32 @@ std::shared_ptr<Node> RedBlackTree::GetGrandparent(
   return current->parent->parent;
 }
 
-std::shared_ptr<Node> RedBlackTree::GetUncle(
-    const std::shared_ptr<Node>& current) {
+Node* RedBlackTree::GetUncle(Node* current) {
   if (current == nullptr || current->parent == nullptr ||
       current->parent->parent == nullptr) {
     return nullptr;
   }
-  bool const kCurParentIsLeftShild =
+  bool cur_parent_is_left_child =
       current->parent == current->parent->parent->left_child;
-  if (kCurParentIsLeftShild) {
+  if (cur_parent_is_left_child) {
     return current->parent->parent->right_child;
   }
   return current->parent->parent->left_child;
 }
-
-std::shared_ptr<Node> RedBlackTree::GetBrother(
-    const std::shared_ptr<Node>& current) {
+Node* RedBlackTree::GetBrother(Node* current) {
   if (current == nullptr || current->parent == nullptr) {
     return nullptr;
   }
-  bool const kCurIsLeftChild = current == current->parent->left_child;
-  if (kCurIsLeftChild) {
+  bool cur_is_left_child = current == current->parent->left_child;
+  if (cur_is_left_child) {
     return current->parent->right_child;
   }
   return current->parent->left_child;
 }
 
 bool RedBlackTree::Exists(int value) const {
-  auto current = root_;
-  while (!current->is_null) {
+  Node* current = root_;
+  while (current != nullptr && !current->is_null) {
     if (value == current->value) {
       return true;
     }
@@ -109,12 +138,12 @@ bool RedBlackTree::Exists(int value) const {
 }
 
 int RedBlackTree::Next(int value) const {
-  if (root_->is_null) {
+  if (root_ == nullptr || root_->is_null) {
     return -kInf;
   }
-  auto current = root_;
+  Node* current = root_;
   int best_passing_value = kInf;
-  while (!current->is_null) {
+  while (current != nullptr && !current->is_null) {
     if (value <= current->value) {
       best_passing_value = std::min(current->value, best_passing_value);
       current = current->left_child;
@@ -129,12 +158,12 @@ int RedBlackTree::Next(int value) const {
 }
 
 int RedBlackTree::Prev(int value) const {
-  if (root_->is_null) {
+  if (root_ == nullptr || root_->is_null) {
     return -kInf;
   }
-  auto current = root_;
+  Node* current = root_;
   int best_passing_value = -kInf;
-  while (!current->is_null) {
+  while (current != nullptr && !current->is_null) {
     if (value >= current->value) {
       best_passing_value = std::max(current->value, best_passing_value);
       current = current->right_child;
@@ -149,16 +178,16 @@ int RedBlackTree::Prev(int value) const {
 }
 
 // parent and grandparent exist
-void RedBlackTree::RotateRight(const std::shared_ptr<Node>& current) {
-  auto cur_left_child = current->left_child;
-  auto cur_parent = current->parent;
-  bool const kIsLeftChild = current == cur_parent->left_child;
+void RedBlackTree::RotateRight(Node* current) {
+  Node* cur_left_child = current->left_child;
+  Node* cur_parent = current->parent;
+  bool is_left_child = current == cur_parent->left_child;
   current->left_child = cur_left_child->right_child;
   current->count_elements_on_left--;
   current->parent = cur_left_child;
   cur_left_child->right_child = current;
   cur_left_child->parent = cur_parent;
-  if (kIsLeftChild) {
+  if (is_left_child) {
     cur_parent->left_child = cur_left_child;
   } else {
     cur_parent->right_child = cur_left_child;
@@ -168,16 +197,16 @@ void RedBlackTree::RotateRight(const std::shared_ptr<Node>& current) {
   }
 }
 
-void RedBlackTree::RotateLeft(const std::shared_ptr<Node>& current) {
-  auto cur_right_child = current->right_child;
-  auto cur_parent = current->parent;
-  bool const kIsLeftChild = current == cur_parent->left_child;
+void RedBlackTree::RotateLeft(Node* current) {
+  Node* cur_right_child = current->right_child;
+  Node* cur_parent = current->parent;
+  bool is_left_child = current == cur_parent->left_child;
   current->right_child = cur_right_child->left_child;
   current->parent = cur_right_child;
   cur_right_child->left_child = current;
   cur_right_child->count_elements_on_left++;
   cur_right_child->parent = cur_parent;
-  if (kIsLeftChild) {
+  if (is_left_child) {
     cur_parent->left_child = cur_right_child;
   } else {
     cur_parent->right_child = cur_right_child;
@@ -187,11 +216,29 @@ void RedBlackTree::RotateLeft(const std::shared_ptr<Node>& current) {
   }
 }
 
+Node* CreateNewNode(int value) {
+  Node* new_node = new Node();
+  new_node->value = value;
+  new_node->is_red = true;
+  new_node->is_null = false;
+  delete new_node->left_child;
+  new_node->left_child = new Node();
+  delete new_node->right_child;
+  new_node->right_child = new Node();
+  delete new_node->left_child->parent;
+  new_node->left_child->parent = new_node;
+  delete new_node->right_child->parent;
+  new_node->right_child->parent = new_node;
+  delete new_node->parent;
+  new_node->parent = new Node();
+  return new_node;
+}
+
 void RedBlackTree::Insert(int value) {
   if (Exists(value)) {
     return;
   }
-  auto current = root_;
+  Node* current = root_;
   while (!current->is_null) {
     if (value < current->value) {
       current = current->left_child;
@@ -199,33 +246,38 @@ void RedBlackTree::Insert(int value) {
       current = current->right_child;
     }
   }
-  auto new_node = std::make_shared<Node>();
-  new_node->value = value;
-  new_node->is_red = true;
-  new_node->is_null = false;
-  new_node->left_child = std::make_shared<Node>();
-  new_node->right_child = std::make_shared<Node>();
-  new_node->left_child->parent = new_node;
-  new_node->right_child->parent = new_node;
+  Node* new_node = CreateNewNode(value);
   if (current->parent == nullptr || current->parent->is_null) {
-    root_->value = value;
-    root_->is_null = false;
-    root_->is_red = false;
+    delete root_->parent;
+    delete root_;
+    new_node->is_red = false;
+    root_ = new_node;
     return;
   }
   if (value < current->parent->value) {
+    if (!current->parent->left_child->is_null) {
+      Node* existing_node = current->parent->left_child;
+      current->parent->left_child = nullptr;
+      delete existing_node;
+    }
     current->parent->left_child = new_node;
     current->parent->count_elements_on_left++;
   } else {
+    if (!current->parent->right_child->is_null) {
+      Node* existing_node = current->parent->right_child;
+      current->parent->right_child = nullptr;
+      delete existing_node;
+    }
     current->parent->right_child = new_node;
   }
+  delete new_node->parent;
   new_node->parent = current->parent;
-
+  delete current;
   FixInsert(new_node);
 }
 
-void RedBlackTree::FixInsert(const std::shared_ptr<Node>& current) {
-  auto cur_parent = GetParent(current);
+void RedBlackTree::FixInsert(Node* current) {
+  Node* cur_parent = GetParent(current);
   if (cur_parent == nullptr || cur_parent->is_null) {
     current->is_red = false;
     return;
@@ -233,8 +285,8 @@ void RedBlackTree::FixInsert(const std::shared_ptr<Node>& current) {
   if (!cur_parent->is_red) {
     return;
   }
-  auto cur_uncle = GetUncle(current);
-  auto cur_grandparent = GetGrandparent(current);
+  Node* cur_uncle = GetUncle(current);
+  Node* cur_grandparent = GetGrandparent(current);
   if (cur_uncle->is_red) {
     cur_parent->is_red = false;
     cur_uncle->is_red = false;
@@ -270,7 +322,7 @@ void RedBlackTree::FixInsert(const std::shared_ptr<Node>& current) {
   }
 }
 
-void FindNode(std::shared_ptr<Node>& current, int value) {
+void FindNode(Node*& current, int value) {
   while (!current->is_null && current->value != value) {
     if (value < current->value) {
       current = current->left_child;
@@ -280,13 +332,11 @@ void FindNode(std::shared_ptr<Node>& current, int value) {
   }
 }
 
-bool SimpleDeleteCases(std::shared_ptr<Node>& current,
-                       std::shared_ptr<Node>& cur_parent,
-                       std::shared_ptr<Node>& not_null_child,
-                       std::shared_ptr<Node>& root) {
+bool SimpleDeleteCases(Node*& current, Node*& cur_parent, Node*& not_null_child,
+                       Node*& root) {
   if (current->is_red) {
-    current = not_null_child;
-    not_null_child->parent = current->parent;
+    // current = not_null_child;
+    not_null_child->parent = cur_parent;
     if (cur_parent->is_null) {
       root = not_null_child;
     }
@@ -299,7 +349,7 @@ bool SimpleDeleteCases(std::shared_ptr<Node>& current,
   }
   if (!current->is_red && not_null_child->is_red) {
     not_null_child->is_red = false;
-    not_null_child->parent = current->parent;
+    not_null_child->parent = cur_parent;
     if (cur_parent->is_null) {
       root = not_null_child;
     }
@@ -313,6 +363,24 @@ bool SimpleDeleteCases(std::shared_ptr<Node>& current,
   return false;
 }
 
+void HandleRootDelete(Node* current, Node* cur_parent, Node*& root) {
+  if (current->parent != nullptr && !current->parent->is_null &&
+      current != cur_parent->left_child && current != cur_parent->right_child) {
+    DeleteNodeParent(current);
+    delete current;
+    if (current == cur_parent->left_child) {
+      cur_parent->left_child = new Node();
+    } else {
+      cur_parent->right_child = new Node();
+    }
+  } else if (current->parent == nullptr || current->parent->is_null) {
+    DeleteNodeParent(current);
+    delete current;
+    root = new Node();
+    root->is_red = false;
+  }
+}
+
 void RedBlackTree::Delete(int value) {
   if (root_ == nullptr) {
     return;
@@ -320,21 +388,24 @@ void RedBlackTree::Delete(int value) {
   if (!Exists(value)) {
     return;
   }
-  auto current = root_;
+  Node* current = root_;
   FindNode(current, value);
-  auto deleted_node = current;
+  Node* deleted_node = current;
   current = current->right_child;
   FindNode(current, value);
+
   current = current->parent;
   std::swap(deleted_node->value, current->value);
 
-  auto cur_parent = GetParent(current);
+  Node* cur_parent = GetParent(current);
 
-  auto not_null_child = (current->left_child->is_null) ? current->right_child
-                                                       : current->left_child;
-  auto simple_result =
+  Node* not_null_child = (current->left_child->is_null) ? current->right_child
+                                                        : current->left_child;
+  bool simple_result =
       SimpleDeleteCases(current, cur_parent, not_null_child, root_);
   if (simple_result) {
+    current->is_null = true;
+    HandleRootDelete(current, cur_parent, root_);
     return;
   }
   not_null_child->parent = cur_parent;
@@ -347,13 +418,16 @@ void RedBlackTree::Delete(int value) {
       cur_parent->right_child = not_null_child;
     }
   }
+
   FixDelete(not_null_child);
+  current->is_null = true;
+  HandleRootDelete(current, cur_parent, root_);
 }
 
-void RedBlackTree::FixDelete(const std::shared_ptr<Node>& current) {
-  auto cur_parent = GetParent(current);
-  auto cur_brother = GetBrother(current);
-  if (cur_parent->is_null) {
+void RedBlackTree::FixDelete(Node* current) {
+  Node* cur_parent = GetParent(current);
+  Node* cur_brother = GetBrother(current);
+  if (cur_parent == nullptr || cur_parent->is_null) {
     return;
   }
   if (cur_brother->is_red) {
@@ -365,8 +439,8 @@ void RedBlackTree::FixDelete(const std::shared_ptr<Node>& current) {
       RotateRight(cur_parent);
     }
   }
-  auto cur_brother_left_child = cur_brother->left_child;
-  auto cur_brother_right_child = cur_brother->right_child;
+  Node* cur_brother_left_child = cur_brother->left_child;
+  Node* cur_brother_right_child = cur_brother->right_child;
   if (!cur_parent->is_red && !cur_brother->is_red &&
       !cur_brother_left_child->is_red && !cur_brother_right_child->is_red) {
     cur_brother->is_red = true;
@@ -406,7 +480,7 @@ int RedBlackTree::Kth(int statistic) const {
   if (root_->is_null) {
     return -kInf;
   }
-  auto current = root_;
+  Node* current = root_;
   while (!current->is_null) {
     if (statistic == current->count_elements_on_left) {
       return current->value;
@@ -430,7 +504,7 @@ void HandleExists(RedBlackTree& tree, int value) {
 }
 
 void HandleNext(RedBlackTree& tree, int value) {
-  auto next = tree.Next(value);
+  int next = tree.Next(value);
   if (next != -kInf && next != value) {
     std::cout << next << "\n";
     return;
@@ -439,7 +513,7 @@ void HandleNext(RedBlackTree& tree, int value) {
 }
 
 void HandlePrev(RedBlackTree& tree, int value) {
-  auto prev = tree.Prev(value);
+  int prev = tree.Prev(value);
   if (prev != -kInf && prev != value) {
     std::cout << prev << "\n";
     return;
@@ -448,7 +522,7 @@ void HandlePrev(RedBlackTree& tree, int value) {
 }
 
 void HandleKth(RedBlackTree& tree, int statistic) {
-  auto result = tree.Kth(statistic);
+  int result = tree.Kth(statistic);
   if (result != -kInf) {
     std::cout << result << "\n";
     return;
