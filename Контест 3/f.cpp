@@ -45,8 +45,6 @@ class SortTree {
   }
 
  private:
-  std::vector<Node> tree_;
-  int array_size_;
   void Build(std::vector<int>& array, int tree_index = 0, int tree_left = 0,
              int tree_right = 0) {
     if (tree_right == 0) {
@@ -67,6 +65,9 @@ class SortTree {
                  tree_[tree_index].array.begin());
     }
   }
+
+  std::vector<Node> tree_;
+  int array_size_;
 };
 
 int main() {
