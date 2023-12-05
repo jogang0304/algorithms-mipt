@@ -1,3 +1,4 @@
+#include <cstddef>
 #include <iostream>
 #include <vector>
 
@@ -10,8 +11,8 @@ class FenwickTree {
  public:
   FenwickTree(int size) : tree_(size) {}
 
-  void Add(int index, int value) {
-    for (int i = index; i < static_cast<int>(tree_.size()); i = OrHelper(i)) {
+  void Add(size_t index, int value) {
+    for (size_t i = index; i < tree_.size(); i = OrHelper(i)) {
       tree_[i] += value;
     }
   }
@@ -40,15 +41,15 @@ class Map {
  public:
   Map(int size) : array_(size, kNull), size_(0) {}
 
-  int Get(int index) const {
-    if (index < static_cast<int>(array_.size())) {
+  int Get(size_t index) const {
+    if (index < array_.size()) {
       return array_[index];
     }
     return kNull;
   }
 
-  void Set(int index, int number) {
-    if (index < static_cast<int>(array_.size())) {
+  void Set(size_t index, int number) {
+    if (index < array_.size()) {
       if (array_[index] == kNull) {
         ++size_;
       }
@@ -60,11 +61,11 @@ class Map {
 };
 
 int main() {
-  int amount_of_hours;
+  size_t amount_of_hours;
   std::cin >> amount_of_hours;
   FenwickTree tree(amount_of_hours + 1);
   Map map(amount_of_hours + 1);
-  for (int i = 0; i < amount_of_hours; ++i) {
+  for (size_t i = 0; i < amount_of_hours; ++i) {
     int current;
     std::cin >> current;
     tree.Add(i + 1, (i % 2 == 0) ? current : -current);
