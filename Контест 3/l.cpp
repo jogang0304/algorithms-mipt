@@ -67,9 +67,6 @@ class PersistentTree {
   }
 
  private:
-  std::vector<std::shared_ptr<Node>> roots_;
-  int array_size_;
-
   void Build(std::vector<int>& array, std::shared_ptr<Node> node) {
     if (node->left + 1 == node->right) {
       node->value = array[node->left];
@@ -84,6 +81,9 @@ class PersistentTree {
     Build(array, node->right_child);
     node->value = node->left_child->value + node->right_child->value;
   }
+
+  std::vector<std::shared_ptr<Node>> roots_;
+  int array_size_;
 };
 
 int main() {
