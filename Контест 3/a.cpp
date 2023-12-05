@@ -28,7 +28,7 @@ class FenwickTree {
     }
   }
 
-  int GetSum(int left, int right) {
+  int GetSum(int left, int right) const {
     int right_sum = 0;
     for (int i = right - 1; i >= 0; i = AndHelper(i) - 1) {
       right_sum += array_[i];
@@ -68,6 +68,30 @@ class Map {
   int Size() const { return size_; }
 };
 
+double GetCheerAnswer(const Map& map, const FenwickTree& tree, int user) {
+  double answer = 0;
+  int user_page = map.Get(user);
+  if (user_page != kNull) {
+    if (map.Size() == 1) {
+      answer = 1;
+    } else {
+      int less_than_user = tree.GetSum(0, user_page);
+      int all_users = map.Size();
+      answer = static_cast<double>(less_than_user) / (all_users - 1);
+    }
+  }
+  return answer;
+}
+
+void HandleAdd(Map& map, FenwickTree& tree, int user, int page) {
+  tree.Add(page);
+  int user_page = map.Get(user);
+  if (user_page != kNull) {
+    tree.Decrease(user_page);
+  }
+  map.Set(user, page);
+}
+
 int main() {
   int amount_of_questions;
   std::cin >> amount_of_questions;
@@ -79,28 +103,13 @@ int main() {
     if (command == "CHEER") {
       int user;
       std::cin >> user;
-      double answer = 0;
-      int user_page = map.Get(user);
-      if (user_page != kNull) {
-        if (map.Size() == 1) {
-          answer = 1;
-        } else {
-          int less_than_user = tree.GetSum(0, user_page);
-          int all_users = map.Size();
-          answer = static_cast<double>(less_than_user) / (all_users - 1);
-        }
-      }
+      double answer = GetCheerAnswer(map, tree, user);
       std::cout << answer << "\n";
     } else {
       int user;
       int page;
       std::cin >> user >> page;
-      tree.Add(page);
-      int user_page = map.Get(user);
-      if (user_page != kNull) {
-        tree.Decrease(user_page);
-      }
-      map.Set(user, page);
+      HandleAdd(map, tree, user, page);
     }
   }
 }
