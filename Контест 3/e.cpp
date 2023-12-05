@@ -112,16 +112,26 @@ class AVLTree {
     Node* current = start_node;
     while (current != nullptr) {
       RecalculateBasicInfo(current);
-
       if (current->delta < -1) {
         SpinLeft(current);
-        // current = current->parent;
       } else if (current->delta > 1) {
         SpinRight(current);
-        // current = current->parent;
       }
-
       current = current->parent;
+    }
+  }
+
+  static void ChangeParentRelation(Node* node, Node* child, Node* parent) {
+    if (node->is_left_child) {
+      if (parent != nullptr) {
+        parent->left_child = child;
+      }
+      child->is_left_child = true;
+    } else {
+      if (parent != nullptr) {
+        parent->right_child = child;
+      }
+      child->is_left_child = false;
     }
   }
 
@@ -137,17 +147,7 @@ class AVLTree {
     Node* left_right_child =
         (left_child != nullptr) ? left_child->right_child : nullptr;
     left_child->parent = parent;
-    if (node->is_left_child) {
-      if (parent != nullptr) {
-        parent->left_child = left_child;
-      }
-      left_child->is_left_child = true;
-    } else {
-      if (parent != nullptr) {
-        parent->right_child = left_child;
-      }
-      left_child->is_left_child = false;
-    }
+    ChangeParentRelation(node, left_child, parent);
     left_child->right_child = node;
     node->parent = left_child;
     node->is_left_child = false;
@@ -175,17 +175,7 @@ class AVLTree {
     Node* right_left_child =
         (right_child != nullptr) ? right_child->left_child : nullptr;
     right_child->parent = parent;
-    if (node->is_left_child) {
-      if (parent != nullptr) {
-        parent->left_child = right_child;
-      }
-      right_child->is_left_child = true;
-    } else {
-      if (parent != nullptr) {
-        parent->right_child = right_child;
-      }
-      right_child->is_left_child = false;
-    }
+    ChangeParentRelation(node, right_child, parent);
     right_child->left_child = node;
     node->parent = right_child;
     node->is_left_child = true;
