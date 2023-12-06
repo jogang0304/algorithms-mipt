@@ -1,75 +1,122 @@
 #include <algorithm>
 #include <functional>
 #include <iostream>
-#include <set>
+#include <list>
+#include <utility>
 #include <vector>
 
 const int kDefaultTableSize = 1'000'000;
 
+// template <typename T>
+// struct TablePair {
+//   T value;
+//   int count;
+// };
+
 template <typename T>
-struct TablePair {
-  T value;
-  int count;
+bool operator<(const std::pair<T, int>& left, const std::pair<T, int>& right) {
+  return left.first < right.first;
+}
+
+template <typename T>
+class Bucket {
+ public:
+  Bucket() {}
+
+  void Insert(std::pair<T, int> value);
+  void Remove(std::pair<T, int> value);
+  bool Has(T value) const;
+  std::pair<T, int> Get(T value) const;
+
+  ~Bucket() = default;
+
+ private:
+  std::list<std::pair<T, int>> elements_;
 };
 
 template <typename T>
-bool TablePairCompare(const TablePair<T>& left, const TablePair<T>& right) {
-  return left.value < right.value;
+void Bucket<T>::Insert(std::pair<T, int> value) {
+  elements_.push_back(value);
+}
+
+template <typename T>
+void Bucket<T>::Remove(std::pair<T, int> value) {
+  auto it = std::find(elements_.begin(), elements_.end(), value);
+  if (it != elements_.end()) {
+    elements_.erase(it);
+  }
+}
+
+template <typename T>
+bool Bucket<T>::Has(T value) const {
+  return std::find_if(elements_.begin(), elements_.end(),
+                      [value](const std::pair<T, int>& pair) {
+                        return pair.first == value;
+                      }) != elements_.end();
+}
+
+template <typename T>
+std::pair<T, int> Bucket<T>::Get(T value) const {
+  auto it = std::find_if(
+      elements_.begin(), elements_.end(),
+      [value](const std::pair<T, int>& pair) { return pair.first == value; });
+  if (it != elements_.end()) {
+    return *it;
+  }
+  return std::pair<T, int>{value, 0};
 }
 
 template <typename T>
 class CountHashTable {
  public:
-  CountHashTable(int size = kDefaultTableSize)
-      : table_(size, std::set<TablePair<T>, decltype(TablePairCompare<T>)*>(
-                         TablePairCompare<T>)) {}
+  CountHashTable(int size = kDefaultTableSize) : table_(size, Bucket<T>()) {}
 
   void Insert(T value);
   void Remove(T value);
   bool Has(T value) const;
 
  private:
-  std::vector<std::set<TablePair<T>, decltype(TablePairCompare<T>)*>> table_;
+  std::vector<Bucket<T>> table_;
 };
 
 template <typename T>
 void CountHashTable<T>::Insert(T value) {
   int hash = std::hash<T>{}(value) % table_.size();
-  auto searching_pair = TablePair<T>{value, 1};
-  auto it = table_[hash].find(searching_pair);
-  if (it == table_[hash].end()) {
-    table_[hash].insert(searching_pair);
+  std::pair<T, int> searching_pair = {value, 1};
+  if (!table_[hash].Has(value)) {
+    table_[hash].Insert(searching_pair);
     return;
   }
-  if (it->count > 0) {
+  std::pair<T, int> existing_pair = table_[hash].Get(value);
+  if (existing_pair.second > 0) {
     return;
   }
-  searching_pair.count = it->count + 1;
-  table_[hash].erase(it);
-  table_[hash].insert(searching_pair);
+  searching_pair.second = existing_pair.second + 1;
+  table_[hash].Remove(existing_pair);
+  table_[hash].Insert(searching_pair);
 }
 
 template <typename T>
 void CountHashTable<T>::Remove(T value) {
   int hash = std::hash<T>{}(value) % table_.size();
-  auto searching_pair = TablePair<T>{value, 1};
-  auto it = table_[hash].find(searching_pair);
-  if (it == table_[hash].end()) {
+  std::pair<T, int> searching_pair = {value, 1};
+  if (!table_[hash].Has(value)) {
     return;
   }
-  searching_pair.count = it->count - 1;
-  table_[hash].erase(it);
-  if (searching_pair.count == 0) {
+  std::pair<T, int> existing_pair = table_[hash].Get(value);
+  searching_pair.second = existing_pair.second - 1;
+  table_[hash].Remove(existing_pair);
+  if (searching_pair.second == 0) {
     return;
   }
-  table_[hash].insert(searching_pair);
+  table_[hash].Insert(searching_pair);
 }
 
 template <typename T>
 bool CountHashTable<T>::Has(T value) const {
   int hash = std::hash<T>{}(value) % table_.size();
-  auto searching_pair = TablePair<T>{value, 1};
-  return table_[hash].find(searching_pair) != table_[hash].end();
+  auto searching_pair = std::pair<T, int>{value, 1};
+  return table_[hash].Has(value);
 }
 
 int main() {
