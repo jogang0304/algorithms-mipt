@@ -7,14 +7,14 @@ const int kInf = 2'000'000'000;
 
 struct Node {
  public:
-  Node* left_child = nullptr;
-  Node* right_child = nullptr;
-  Node* parent = nullptr;
+  Node* left_child;
+  Node* right_child;
+  Node* parent;
   int value = -1;
   bool is_red = false;
   bool is_null = true;
   int count_elements_on_left = 0;
-  Node() {}
+  Node() : left_child(nullptr), right_child(nullptr), parent(nullptr) {}
   ~Node() {
     if (left_child != nullptr) {
       left_child->parent = nullptr;
@@ -28,15 +28,6 @@ struct Node {
     }
   }
 };
-
-void DeleteNodeParent(Node* node) {
-  if (node->parent->left_child == node) {
-    node->parent->left_child = nullptr;
-  } else if (node->parent->right_child == node) {
-    node->parent->right_child = nullptr;
-  }
-  delete node->parent;
-}
 
 class RedBlackTree {
  public:
@@ -366,15 +357,13 @@ bool SimpleDeleteCases(Node*& current, Node*& cur_parent, Node*& not_null_child,
 void HandleRootDelete(Node* current, Node* cur_parent, Node*& root) {
   if (current->parent != nullptr && !current->parent->is_null &&
       current != cur_parent->left_child && current != cur_parent->right_child) {
-    DeleteNodeParent(current);
-    delete current;
     if (current == cur_parent->left_child) {
       cur_parent->left_child = new Node();
     } else {
       cur_parent->right_child = new Node();
     }
+    delete current;
   } else if (current->parent == nullptr || current->parent->is_null) {
-    DeleteNodeParent(current);
     delete current;
     root = new Node();
     root->is_red = false;
@@ -395,6 +384,12 @@ void RedBlackTree::Delete(int value) {
   FindNode(current, value);
 
   current = current->parent;
+  if (current == nullptr || current->is_null) {
+    current = new Node();
+    current->parent = new Node();
+    current->left_child = new Node();
+    current->right_child = new Node();
+  }
   std::swap(deleted_node->value, current->value);
 
   Node* cur_parent = GetParent(current);
