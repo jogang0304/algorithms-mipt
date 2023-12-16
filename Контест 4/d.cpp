@@ -52,12 +52,14 @@ class RedBlackTree {
   }
 
   ~RedBlackTree() {
-    if (root_->parent->left_child == root_) {
-      root_->parent->left_child = nullptr;
-    } else if (root_->parent->right_child == root_) {
-      root_->parent->right_child = nullptr;
+    if (root_->parent != nullptr) {
+      if (root_->parent->left_child == root_) {
+        root_->parent->left_child = nullptr;
+      } else if (root_->parent->right_child == root_) {
+        root_->parent->right_child = nullptr;
+      }
+      delete root_->parent;
     }
-    delete root_->parent;
     delete root_;
   }
 
@@ -171,10 +173,11 @@ int RedBlackTree::Prev(int value) const {
 // parent and grandparent exist
 void RedBlackTree::RotateRight(Node* current) {
   Node* cur_left_child = current->left_child;
-  Node* cur_parent = current->parent;
+  Node* cur_parent = GetParent(current);
   bool is_left_child = current == cur_parent->left_child;
   current->left_child = cur_left_child->right_child;
-  current->count_elements_on_left--;
+  current->left_child->parent = current;
+  current->count_elements_on_left -= cur_left_child->count_elements_on_left + 1;
   current->parent = cur_left_child;
   cur_left_child->right_child = current;
   cur_left_child->parent = cur_parent;
@@ -183,26 +186,28 @@ void RedBlackTree::RotateRight(Node* current) {
   } else {
     cur_parent->right_child = cur_left_child;
   }
-  if (cur_parent->is_null) {
+  if (cur_parent == nullptr || cur_parent->is_null) {
     root_ = cur_left_child;
   }
 }
 
 void RedBlackTree::RotateLeft(Node* current) {
   Node* cur_right_child = current->right_child;
-  Node* cur_parent = current->parent;
+  Node* cur_parent = GetParent(current);
   bool is_left_child = current == cur_parent->left_child;
   current->right_child = cur_right_child->left_child;
+  current->right_child->parent = current;
   current->parent = cur_right_child;
   cur_right_child->left_child = current;
-  cur_right_child->count_elements_on_left++;
+  cur_right_child->count_elements_on_left +=
+      current->count_elements_on_left + 1;
   cur_right_child->parent = cur_parent;
   if (is_left_child) {
     cur_parent->left_child = cur_right_child;
   } else {
     cur_parent->right_child = cur_right_child;
   }
-  if (cur_parent->is_null) {
+  if (cur_parent == nullptr || cur_parent->is_null) {
     root_ = cur_right_child;
   }
 }
@@ -222,6 +227,7 @@ Node* CreateNewNode(int value) {
   new_node->right_child->parent = new_node;
   delete new_node->parent;
   new_node->parent = new Node();
+  new_node->count_elements_on_left = 0;
   return new_node;
 }
 
@@ -232,6 +238,7 @@ void RedBlackTree::Insert(int value) {
   Node* current = root_;
   while (!current->is_null) {
     if (value < current->value) {
+      current->count_elements_on_left++;
       current = current->left_child;
     } else {
       current = current->right_child;
@@ -249,6 +256,7 @@ void RedBlackTree::Insert(int value) {
     if (!current->parent->left_child->is_null) {
       Node* existing_node = current->parent->left_child;
       current->parent->left_child = nullptr;
+      current->parent->count_elements_on_left--;
       delete existing_node;
     }
     current->parent->left_child = new_node;
@@ -333,6 +341,8 @@ bool SimpleDeleteCases(Node*& current, Node*& cur_parent, Node*& not_null_child,
     }
     if (cur_parent->left_child == current) {
       cur_parent->left_child = not_null_child;
+      cur_parent->count_elements_on_left =
+          not_null_child->count_elements_on_left + 1;
     } else {
       cur_parent->right_child = not_null_child;
     }
@@ -346,6 +356,8 @@ bool SimpleDeleteCases(Node*& current, Node*& cur_parent, Node*& not_null_child,
     }
     if (cur_parent->left_child == current) {
       cur_parent->left_child = not_null_child;
+      cur_parent->count_elements_on_left =
+          not_null_child->count_elements_on_left + 1;
     } else {
       cur_parent->right_child = not_null_child;
     }
@@ -355,17 +367,36 @@ bool SimpleDeleteCases(Node*& current, Node*& cur_parent, Node*& not_null_child,
 }
 
 void HandleRootDelete(Node* current, Node* cur_parent, Node*& root) {
-  if (current->parent != nullptr && !current->parent->is_null &&
-      current != cur_parent->left_child && current != cur_parent->right_child) {
+  if (current->parent != nullptr && !current->parent->is_null) {
     if (current == cur_parent->left_child) {
-      cur_parent->left_child = new Node();
-    } else {
-      cur_parent->right_child = new Node();
+      delete cur_parent->left_child;
+      cur_parent->left_child = CreateNewNode(-1);
+      cur_parent->left_child->is_null = true;
+      cur_parent->left_child->parent = cur_parent;
+      cur_parent->count_elements_on_left = 0;
+    } else if (current == cur_parent->right_child) {
+      delete cur_parent->right_child;
+      cur_parent->right_child = CreateNewNode(-1);
+      cur_parent->right_child->is_null = true;
+      cur_parent->right_child->parent = cur_parent;
     }
+    if (current->left_child != nullptr &&
+        current->left_child != cur_parent->left_child &&
+        current->left_child != cur_parent->right_child) {
+      delete current->left_child;  // NOLINT
+    }
+    if (current->right_child != nullptr &&
+        current->right_child != cur_parent->left_child &&
+        current->right_child != cur_parent->right_child) {
+      delete current->right_child;  // NOLINT
+    }
+    current->left_child = nullptr;
+    current->right_child = nullptr;
     delete current;
   } else if (current->parent == nullptr || current->parent->is_null) {
     delete current;
-    root = new Node();
+    root = CreateNewNode(-1);
+    root->is_null = true;
     root->is_red = false;
   }
 }
@@ -385,6 +416,7 @@ void RedBlackTree::Delete(int value) {
 
   current = current->parent;
   if (current == nullptr || current->is_null) {
+    delete current;
     current = new Node();
     current->parent = new Node();
     current->left_child = new Node();
@@ -527,6 +559,14 @@ void HandleKth(RedBlackTree& tree, int statistic) {
 
 int main() {
   RedBlackTree tree;
+
+  // for (int i = 0; i < 1000000; ++i) {
+  //   tree.Insert(i);
+  // }
+  // for (int i = 0; i < 10000; ++i) {
+  //   tree.Delete(i);
+  // }
+
   std::string command;
   while (std::cin >> command) {
     int value = 0;
