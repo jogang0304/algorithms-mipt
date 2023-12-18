@@ -8,7 +8,7 @@ const int64_t kMod = 1'000'000'000;
 // AVL tree (multiset), where all left children are less or equal and all right
 // children are greater
 
-class Node {
+struct Node {
  public:
   int64_t value;
   int subtree_size = 1;
@@ -145,6 +145,18 @@ class AVLTree {
     }
   }
 
+  static void SwapWithLeftChild(Node* node, Node* left_child,
+                                Node* left_right_child) {
+    left_child->right_child = node;
+    node->parent = left_child;
+    node->is_left_child = false;
+    node->left_child = left_right_child;
+    if (left_right_child != nullptr) {
+      left_right_child->parent = node;
+      left_right_child->is_left_child = true;
+    }
+  }
+
   void SpinRight(Node* node) {
     Node* left_child = node->left_child;
     Node* parent = node->parent;
@@ -168,19 +180,24 @@ class AVLTree {
       }
       left_child->is_left_child = false;
     }
-    left_child->right_child = node;
-    node->parent = left_child;
-    node->is_left_child = false;
-    node->left_child = left_right_child;
-    if (left_right_child != nullptr) {
-      left_right_child->parent = node;
-      left_right_child->is_left_child = true;
-    }
+    SwapWithLeftChild(node, left_child, left_right_child);
     if (node == root_) {
       root_ = left_child;
     }
     RecalculateBasicInfo(node);
     RecalculateBasicInfo(left_child);
+  }
+
+  static void SwapWithRightChild(Node* node, Node* right_child,
+                                 Node* right_left_child) {
+    right_child->left_child = node;
+    node->parent = right_child;
+    node->is_left_child = true;
+    node->right_child = right_left_child;
+    if (right_left_child != nullptr) {
+      right_left_child->parent = node;
+      right_left_child->is_left_child = false;
+    }
   }
 
   void SpinLeft(Node* node) {
@@ -206,14 +223,7 @@ class AVLTree {
       }
       right_child->is_left_child = false;
     }
-    right_child->left_child = node;
-    node->parent = right_child;
-    node->is_left_child = true;
-    node->right_child = right_left_child;
-    if (right_left_child != nullptr) {
-      right_left_child->parent = node;
-      right_left_child->is_left_child = false;
-    }
+    SwapWithRightChild(node, right_child, right_left_child);
     if (node == root_) {
       root_ = right_child;
     }
