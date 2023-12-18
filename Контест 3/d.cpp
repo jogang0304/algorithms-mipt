@@ -49,13 +49,11 @@ class FenwickTree {
   std::vector<int> array_;
 };
 
-int main() {
+void Input(std::vector<Matrix>& array, std::map<Matrix, int>& similar_matrixes,
+           std::set<int>& rights) {
   int amount_of_matrixes;
   std::cin >> amount_of_matrixes;
-  std::vector<Matrix> array;
   int max_right = 0;
-  std::map<Matrix, int> similar_matrixes;
-  std::set<int> rights;
   for (int i = 0; i < amount_of_matrixes; ++i) {
     int left;
     int right;
@@ -65,18 +63,25 @@ int main() {
     similar_matrixes[{left, right}] += 1;
     rights.insert(right);
   }
+}
+
+int main() {
+  std::vector<Matrix> array;
+  std::map<Matrix, int> similar_matrixes;
+  std::set<int> rights;
+  Input(array, similar_matrixes, rights);
   std::map<int, int> right_to_number;
   int index = 0;
   for (auto value : rights) {
     right_to_number[value] = index++;
   }
   std::sort(array.begin(), array.end());
-  FenwickTree tree(amount_of_matrixes + 1);
-  for (int i = 0; i < amount_of_matrixes; ++i) {
+  FenwickTree tree(array.size() + 1);
+  for (size_t i = 0; i < array.size(); ++i) {
     tree.Add(right_to_number[array[i].right]);
   }
   int64_t answer = 0;
-  for (int i = 0; i < amount_of_matrixes; ++i) {
+  for (size_t i = 0; i < array.size(); ++i) {
     answer += tree.GetSum(0, right_to_number[array[i].right] + 1) -
               similar_matrixes[array[i]];
     similar_matrixes[array[i]] -= 1;
