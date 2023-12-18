@@ -7,12 +7,6 @@
 
 const int kDefaultTableSize = 1'000'000;
 
-// template <typename T>
-// struct TablePair {
-//   T value;
-//   int count;
-// };
-
 template <typename T>
 bool operator<(const std::pair<T, int>& left, const std::pair<T, int>& right) {
   return left.first < right.first;
