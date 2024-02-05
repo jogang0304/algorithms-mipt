@@ -1,0 +1,67 @@
+2023-11-08T19:48:26.187Z [[34mdebug[39m] Starting Trunk language client with run config: {"command":"/home/jogang/.cache/trunk/launcher/trunk","args":["lsp-proxy"],"options":{"cwd":"/home/jogang/Documents/фпми/Алгоритмы/Контест 3","detached":false,"shell":false}}
+2023-11-09T05:04:00.730Z [[31merror[39m] Channel has been closed
+2023-11-13T19:47:40.974Z [[34mdebug[39m] Starting Trunk language client with run config: {"command":"/home/jogang/.cache/trunk/launcher/trunk","args":["lsp-proxy"],"options":{"cwd":"/home/jogang/Documents/фпми/Алгоритмы/Контест 3","detached":false,"shell":false}}
+2023-11-13T19:54:56.368Z [[31merror[39m] Channel has been closed
+2023-11-13T19:55:09.525Z [[34mdebug[39m] Starting Trunk language client with run config: {"command":"/home/jogang/.cache/trunk/launcher/trunk","args":["lsp-proxy"],"options":{"cwd":"/home/jogang/Documents/фпми/Алгоритмы/Контест 3","detached":false,"shell":false}}
+2023-11-13T19:56:48.731Z [[31merror[39m] Channel has been closed
+2023-11-13T19:56:59.782Z [[34mdebug[39m] Starting Trunk language client with run config: {"command":"/home/jogang/.cache/trunk/launcher/trunk","args":["lsp-proxy"],"options":{"cwd":"/home/jogang/Documents/фпми/Алгоритмы/Контест 3","detached":false,"shell":false}}
+2023-11-13T22:22:26.979Z [[31merror[39m] Channel has been closed
+2023-11-14T08:22:55.231Z [[34mdebug[39m] Starting Trunk language client with run config: {"command":"/home/jogang/.cache/trunk/launcher/trunk","args":["lsp-proxy"],"options":{"cwd":"/home/jogang/Documents/фпми/Алгоритмы/Контест 3","detached":false,"shell":false}}
+2023-11-14T08:23:06.892Z [[31merror[39m] Channel has been closed
+2023-11-15T15:36:21.867Z [[34mdebug[39m] Starting Trunk language client with run config: {"command":"/home/jogang/.cache/trunk/launcher/trunk","args":["lsp-proxy"],"options":{"cwd":"/home/jogang/Documents/фпми/Алгоритмы","detached":false,"shell":false}}
+2023-11-15T16:52:59.003Z [[31merror[39m] Channel has been closed
+2023-11-15T18:09:45.201Z [[34mdebug[39m] Starting Trunk language client with run config: {"command":"/home/jogang/.cache/trunk/launcher/trunk","args":["lsp-proxy"],"options":{"cwd":"/home/jogang/Documents/фпми/Алгоритмы","detached":false,"shell":false}}
+2023-11-15T18:09:59.849Z [[31merror[39m] Channel has been closed
+2023-11-15T18:10:17.722Z [[34mdebug[39m] Starting Trunk language client with run config: {"command":"/home/jogang/.cache/trunk/launcher/trunk","args":["lsp-proxy"],"options":{"cwd":"/home/jogang/Documents/фпми/Алгоритмы","detached":false,"shell":false}}
+2023-11-15T18:11:03.181Z [[31merror[39m] Failed to get available upgrades: Error: LSP method [$trunk/getAvailableUpgrades] not supported by server
+2023-11-15T21:42:54.323Z [[31merror[39m] Channel has been closed
+2023-11-16T10:00:52.411Z [[34mdebug[39m] Starting Trunk language client with run config: {"command":"/home/jogang/.cache/trunk/launcher/trunk","args":["lsp-proxy"],"options":{"cwd":"/home/jogang/Documents/фпми/Алгоритмы/Контест 3","detached":false,"shell":false}}
+2023-11-16T13:33:42.417Z [[31merror[39m] Received critical error from lsp proxy: trunk daemon is not running
+2023-11-16T13:33:42.421Z [[31merror[39m] trunk daemon is not running
+2023-11-16T13:33:43.399Z [[31merror[39m] Pending response rejected since connection got disposed
+2023-11-17T11:24:51.010Z [[34mdebug[39m] Starting Trunk language client with run config: {"command":"/home/jogang/.cache/trunk/launcher/trunk","args":["lsp-proxy"],"options":{"cwd":"/home/jogang/Documents/фпми/Алгоритмы/Контест 3","detached":false,"shell":false}}
+2023-11-17T11:48:14.688Z [[31merror[39m] Channel has been closed
+2023-11-21T14:28:27.234Z [[34mdebug[39m] Starting Trunk language client with run config: {"command":"/home/jogang/.cache/trunk/launcher/trunk","args":["lsp-proxy"],"options":{"cwd":"/home/jogang/Documents/фпми/Алгоритмы/Контест 3","detached":false,"shell":false}}
+2023-11-21T14:28:38.844Z [[31merror[39m] Received critical error from lsp proxy: trunk daemon is not running
+2023-11-21T14:28:38.845Z [[31merror[39m] trunk daemon is not running
+2023-11-21T14:28:40.106Z [[31merror[39m] Pending response rejected since connection got disposed
+2023-11-21T15:02:35.771Z [[34mdebug[39m] Starting Trunk language client with run config: {"command":"/home/jogang/.cache/trunk/launcher/trunk","args":["lsp-proxy"],"options":{"cwd":"/home/jogang/Documents/фпми/Алгоритмы/Контест 3","detached":false,"shell":false}}
+2023-11-21T17:19:53.186Z [[31merror[39m] Channel has been closed
+2023-11-21T18:16:16.343Z [[31merror[39m] Canceled
+2023-11-21T18:16:16.347Z [[31merror[39m] Canceled
+2023-11-21T18:16:16.389Z [[31mcrit[39m] Cannot read properties of undefined (reading 'fsPath')
+2023-11-21T19:23:57.634Z [[34mdebug[39m] Starting Trunk language client with run config: {"command":"/home/jogang/.cache/trunk/launcher/trunk","args":["lsp-proxy"],"options":{"cwd":"/home/jogang/Documents/фпми/Алгоритмы","detached":false,"shell":false}}
+2023-11-21T21:44:58.233Z [[31merror[39m] Channel has been closed
+2023-11-22T14:20:11.279Z [[34mdebug[39m] Starting Trunk language client with run config: {"command":"/home/jogang/.cache/trunk/launcher/trunk","args":["lsp-proxy"],"options":{"cwd":"/home/jogang/Documents/фпми/Алгоритмы/Контест 3","detached":false,"shell":false}}
+2023-11-22T14:46:13.676Z [[31merror[39m] Received critical error from lsp proxy: trunk daemon is not running
+2023-11-22T14:46:13.677Z [[31merror[39m] trunk daemon is not running
+2023-11-22T14:46:14.352Z [[31merror[39m] Pending response rejected since connection got disposed
+2023-11-22T21:03:20.367Z [[34mdebug[39m] Starting Trunk language client with run config: {"command":"/home/jogang/.cache/trunk/launcher/trunk","args":["lsp-proxy"],"options":{"cwd":"/home/jogang/Documents/фпми/Алгоритмы/Контест 3","detached":false,"shell":false}}
+2023-11-22T21:38:36.961Z [[31merror[39m] Channel has been closed
+2023-11-23T07:18:05.399Z [[31merror[39m] Canceled
+2023-11-23T07:18:05.436Z [[31merror[39m] Canceled
+2023-11-23T07:18:05.500Z [[31mcrit[39m] Canceled
+2023-11-23T07:18:21.687Z [[34mdebug[39m] Starting Trunk language client with run config: {"command":"/home/jogang/.cache/trunk/launcher/trunk","args":["lsp-proxy"],"options":{"cwd":"/home/jogang/Documents/фпми/Алгоритмы","detached":false,"shell":false}}
+2023-11-23T07:28:32.230Z [[31merror[39m] Channel has been closed
+2023-11-23T09:35:27.768Z [[34mdebug[39m] Starting Trunk language client with run config: {"command":"/home/jogang/.cache/trunk/launcher/trunk","args":["lsp-proxy"],"options":{"cwd":"/home/jogang/Documents/фпми/Алгоритмы","detached":false,"shell":false}}
+2023-11-23T09:40:06.685Z [[31merror[39m] Failed to get available upgrades: Error: LSP method [$trunk/getAvailableUpgrades] not supported by server
+2023-11-23T15:25:50.068Z [[31merror[39m] Failed to get available upgrades: Error: LSP method [$trunk/getAvailableUpgrades] not supported by server
+2023-11-23T16:25:21.781Z [[31merror[39m] Channel has been closed
+2023-11-23T17:12:41.235Z [[34mdebug[39m] Starting Trunk language client with run config: {"command":"/home/jogang/.cache/trunk/launcher/trunk","args":["lsp-proxy"],"options":{"cwd":"/home/jogang/Documents/фпми/Алгоритмы","detached":false,"shell":false}}
+2023-11-23T17:13:42.691Z [[31merror[39m] Failed to get available upgrades: Error: LSP method [$trunk/getAvailableUpgrades] not supported by server
+2023-11-23T17:52:18.244Z [[31merror[39m] Channel has been closed
+2023-11-24T11:57:14.125Z [[34mdebug[39m] Starting Trunk language client with run config: {"command":"/home/jogang/.cache/trunk/launcher/trunk","args":["lsp-proxy"],"options":{"cwd":"/home/jogang/Documents/фпми/Алгоритмы","detached":false,"shell":false}}
+2023-11-24T11:57:19.855Z [[31merror[39m] Channel has been closed
+2023-11-24T11:57:59.379Z [[34mdebug[39m] Starting Trunk language client with run config: {"command":"/home/jogang/.cache/trunk/launcher/trunk","args":["lsp-proxy"],"options":{"cwd":"/home/jogang/Documents/фпми/Алгоритмы","detached":false,"shell":false}}
+2023-11-24T13:14:30.961Z [[31merror[39m] Channel has been closed
+2023-11-24T13:14:44.229Z [[34mdebug[39m] Starting Trunk language client with run config: {"command":"/home/jogang/.cache/trunk/launcher/trunk","args":["lsp-proxy"],"options":{"cwd":"/home/jogang/Documents/фпми/Алгоритмы","detached":false,"shell":false}}
+2023-11-24T15:39:13.747Z [[31merror[39m] Channel has been closed
+2023-11-24T15:57:37.822Z [[34mdebug[39m] Starting Trunk language client with run config: {"command":"/home/jogang/.cache/trunk/launcher/trunk","args":["lsp-proxy"],"options":{"cwd":"/home/jogang/Documents/фпми/Алгоритмы","detached":false,"shell":false}}
+2023-11-24T16:41:13.486Z [[31merror[39m] Channel has been closed
+2023-11-24T18:42:33.577Z [[34mdebug[39m] Starting Trunk language client with run config: {"command":"/home/jogang/.cache/trunk/launcher/trunk","args":["lsp-proxy"],"options":{"cwd":"/home/jogang/Documents/фпми/Алгоритмы","detached":false,"shell":false}}
+2023-11-24T21:13:37.894Z [[31merror[39m] Channel has been closed
+2023-11-25T09:13:21.781Z [[31mcrit[39m] Canceled
+2023-11-28T16:47:28.375Z [[34mdebug[39m] Starting Trunk language client with run config: {"command":"/home/jogang/.cache/trunk/launcher/trunk","args":["lsp-proxy"],"options":{"cwd":"/home/jogang/Documents/фпми/Алгоритмы","detached":false,"shell":false}}
+2023-11-28T16:47:37.724Z [[31merror[39m] Failed to get available upgrades: Error: LSP method [$trunk/getAvailableUpgrades] not supported by server
+2023-11-28T18:01:11.857Z [[31merror[39m] Channel has been closed
+2023-12-01T12:55:05.574Z [[34mdebug[39m] Starting Trunk language client with run config: {"command":"/home/jogang/.cache/trunk/launcher/trunk","args":["lsp-proxy"],"options":{"cwd":"/home/jogang/Documents/фпми/Алгоритмы","detached":false,"shell":false}}
