@@ -1,0 +1,18 @@
+\documentclass{extarticle}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage{geometry}
+\geometry{a4paper, margin=2cm}
+
+
+\begin{document}
+
+\section*{1}
+Очевидно, что первый гвоздик нужно соединить со вторым.
+Третий гвоздик можно соединить со вторым или с четвёртым. Будем хранить два массива a и b. В массиве a будем хранить длину ниток, если мы соединили гвоздик i с i-1. В массиве b храним длину ниток, если не соединили. i от 1 до n. a[1] = none, b[1] = 0, a[2] = l[1, 2], b[2] = none. Далее, a[i] = min(a[i-1], b[i-1]) + l[i-1, i], b[i] = a[i-1]. Ответом будет a[n].
+
+\section*{2}
+
+
+\end{document}
