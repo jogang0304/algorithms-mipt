@@ -3,16 +3,61 @@
 \usepackage[utf8]{inputenc}
 \usepackage[english,russian]{babel}
 \usepackage{geometry}
+\usepackage{listings}
 \geometry{a4paper, margin=2cm}
 
 
 \begin{document}
 
 \section*{1}
+Отсортируем гвозди по возрастанию координаты.
+\newline
 Очевидно, что первый гвоздик нужно соединить со вторым.
+\newline
 Третий гвоздик можно соединить со вторым или с четвёртым. Будем хранить два массива a и b. В массиве a будем хранить длину ниток, если мы соединили гвоздик i с i-1. В массиве b храним длину ниток, если не соединили. i от 1 до n. a[1] = none, b[1] = 0, a[2] = l[1, 2], b[2] = none. Далее, a[i] = min(a[i-1], b[i-1]) + l[i-1, i], b[i] = a[i-1]. Ответом будет a[n].
+\newline
+Асимптотика O(n log n) из-за сортировки.
 
 \section*{2}
+Сделаем двухмерный массив dp.
+\newline
+В dp[i][j], i < j хранится сколько нужно минимально переправ для перевоза грузов с i по j, и сколько свободного места есть в последней переправе.
+\newline
+dp[i][i] = $\{1, t - w[i]\}$
+\newline
+dp[i][j] =
+\begin{lstlisting}
+    if (dp[i + 1][j].first < dp[i][j - 1].first) {
+        if (dp[i + 1][j].second >= w[i]) {
+            dp[i][j] = {dp[i + 1][j].first, dp[i + 1][j].second - w[i]}
+        } else {
+                dp[i][j] = {dp[i + 1][j].first + 1, t - w[i]}
+        }
+    } else if (dp[i + 1][j].first > dp[i][j - 1].first) {
+        if (dp[i][j - 1].second >= w[j]) {
+            dp[i][j] = {dp[i][j - 1].first, dp[i][j - 1].second - w[j]}
+        } else {
+            dp[i][j] = {dp[i][j - 1].first + 1, t - w[j]}
+        }
+    } else {
+        if (dp[i + 1][j].second >= dp[i][j - 1].second) {
+            if (dp[i + 1][j].second >= w[i]) {
+                dp[i][j] = {dp[i + 1][j].first, dp[i + 1][j].second - w[i]}
+            } else {
+                dp[i][j] = {dp[i + 1][j].first + 1, t - w[i]}
+            }
+        } else {
+            if (dp[i][j - 1].second >= w[j]) {
+                dp[i][j] = {dp[i][j - 1].first, dp[i][j - 1].second - w[j]}
+            } else {
+                dp[i][j] = {dp[i][j - 1].first + 1, t - w[j]}
+            }
+        }
+    }
+\end{lstlisting}
+Ответом будет dp[1][n].first.
+
+\section*{3
 
 
 \end{document}
