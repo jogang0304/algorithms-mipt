@@ -1,13 +1,15 @@
+#include <algorithm>
 #include <iostream>
 #include <vector>
-#include <algorithm>
 
 int main() {
   int power;
   std::cin >> power;
   // dp[i][j] - how much with power i, if biggest element is j
-  std::vector<std::vector<int>> dp(power + 1, std::vector<int>(power + 1, 0));
-  std::vector<std::vector<int>> pref_sum(power + 1, std::vector<int>(power + 1, 0));
+  std::vector<std::vector<int64_t>> dp(power + 1,
+                                       std::vector<int64_t>(power + 1, 0));
+  std::vector<std::vector<int64_t>> pref_sum(
+      power + 1, std::vector<int64_t>(power + 1, 0));
   for (int i = 1; i <= power; ++i) {
     for (int j = 1; j <= i; ++j) {
       if (i == j) {
@@ -20,6 +22,6 @@ int main() {
       pref_sum[i][j] = pref_sum[i][j - 1] + dp[i][j];
     }
   }
-  int answer = pref_sum[power][power];
+  auto answer = pref_sum[power][power];
   std::cout << answer;
 }
