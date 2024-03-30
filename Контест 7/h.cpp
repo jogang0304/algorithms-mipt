@@ -1,11 +1,9 @@
 #include <algorithm>
-#include <cmath>
 #include <iostream>
 #include <set>
 #include <vector>
 
 const int NoneValue = -1;
-const int MagicValue = 3;
 
 struct Node {
   int index = NoneValue;
@@ -18,13 +16,12 @@ struct Node {
 struct Edge {
   int start = NoneValue;
   int end = NoneValue;
-  int index = NoneValue;
 };
 
 std::vector<Node> nodes;
-std::vector<std::vector<int>> graph;
+std::vector<std::set<int>> graph;
 std::vector<Node> strong_components;
-std::vector<Edge> components_graph;
+std::vector<std::set<int>> components_graph;
 
 bool operator<(const Edge& left, const Edge& right) {
   return left.start < right.start ||
@@ -36,26 +33,21 @@ bool operator==(const Edge& left, const Edge& right) {
 }
 
 int timer = 0;
-std::vector<Edge> DfsGetBridges(int start, int component,
-                                int parent = NoneValue) {
+std::set<Edge> DfsGetBridges(int start, int parent = NoneValue) {
   nodes[start].time_in = timer++;
-  nodes[start].component = component;
   nodes[start].min_tin_from_subtree = nodes[start].time_in;
-  std::vector<Edge> answer;
-  bool visited_parent = false;
+  std::set<Edge> answer;
   for (auto next : graph[start]) {
-    if (next == parent && !visited_parent) {
-      visited_parent = true;
+    if (next == parent) {
       continue;
     }
     if (nodes[next].time_in == NoneValue) {
-      auto subtree_answer = DfsGetBridges(next, component, start);
+      auto subtree_answer = DfsGetBridges(next, start);
       for (auto element : subtree_answer) {
-        answer.push_back(element);
+        answer.insert(element);
       }
       if (nodes[next].min_tin_from_subtree > nodes[start].time_in) {
-        answer.push_back(
-            {std::min(start, next), std::max(start, next), NoneValue});
+        answer.insert({std::min(start, next), std::max(start, next)});
       }
     }
     nodes[start].min_tin_from_subtree = std::min(
@@ -65,25 +57,31 @@ std::vector<Edge> DfsGetBridges(int start, int component,
   return answer;
 }
 
-struct BridgesInfo {
-  int amount_of_bridges;
-  int amount_of_comopnents;
-  std::vector<std::vector<Edge>> bridges_by_components;
-};
+void PaintToComponent(int start, int component,
+                      const std::set<Edge>& deleted_edges) {
+  nodes[start].component = component;
+  for (auto next : graph[start]) {
+    if (deleted_edges.find({start, next}) != deleted_edges.end() ||
+        deleted_edges.find({next, start}) != deleted_edges.end()) {
+      continue;
+    }
+    if (nodes[next].component == NoneValue) {
+      PaintToComponent(next, component, deleted_edges);
+    }
+  }
+}
 
 void Input() {
   int amount_of_nodes;
   int amount_of_edges;
   std::cin >> amount_of_nodes >> amount_of_edges;
-  graph.resize(amount_of_nodes, std::vector<int>(0));
-  std::vector<Edge> edges(amount_of_edges);
+  graph.resize(amount_of_nodes);
   for (int i = 0; i < amount_of_edges; ++i) {
     int start;
     int end;
     std::cin >> start >> end;
-    graph[start - 1].push_back(end - 1);
-    graph[end - 1].push_back(start - 1);
-    edges[i] = {std::min(start - 1, end - 1), std::max(start - 1, end - 1), i};
+    graph[start - 1].insert(end - 1);
+    graph[end - 1].insert(start - 1);
   }
   nodes.resize(amount_of_nodes);
   for (int i = 0; i < amount_of_nodes; ++i) {
@@ -91,34 +89,39 @@ void Input() {
   }
 }
 
-BridgesInfo GetBridgesInfo() {
-  int component = 0;
-  int amount_of_bridges = 0;
-  std::vector<std::vector<Edge>> bridges_by_component(0);
+void MakeComponentsGraph(int components) {
+  strong_components.resize(components);
+  components_graph.resize(components);
   for (size_t i = 0; i < nodes.size(); ++i) {
-    if (nodes[i].time_in == NoneValue) {
-      auto answer = DfsGetBridges(static_cast<int>(i), component);
-      bridges_by_component.push_back(answer);
-      amount_of_bridges += static_cast<int>(answer.size());
-      ++component;
+    for (auto next : graph[i]) {
+      if (nodes[i].component != nodes[next].component) {
+        components_graph[nodes[i].component].insert(nodes[next].component);
+        components_graph[nodes[next].component].insert(nodes[i].component);
+      }
     }
   }
-  return {amount_of_bridges, component, bridges_by_component};
 }
 
-void DfsPaint(int start, int color) {}
-
-void ParseNodesToComponents(std::vector<Edge> bridges) {
-  std::set<Edge> bridges_set;
-  for (size_t i = 0; i < bridges.size(); ++i) {
-    bridges_set.insert(bridges[i]);
+std::vector<int> GetComponentsLeafs() {
+  std::vector<int> answer;
+  for (size_t i = 0; i < strong_components.size(); ++i) {
+    if (components_graph[i].size() == 1) {
+      answer.push_back(i);
+    }
   }
+  return answer;
 }
 
 int main() {
   Input();
-  auto bridges_info = GetBridgesInfo();
-  strong_components.resize(bridges_info.amount_of_bridges + 1);
-  ParseNodesToComponents(bridges_info.bridges_by_components[0]);
-  std::cout << (bridges_info.amount_of_bridges + 1) / MagicValue + 1;
+  auto bridges = DfsGetBridges(0);
+  int component = 0;
+  for (int i = 0; i < static_cast<int>(nodes.size()); ++i) {
+    if (nodes[i].component == NoneValue) {
+      PaintToComponent(i, component++, bridges);
+    }
+  }
+  MakeComponentsGraph(component);
+  auto leafs = GetComponentsLeafs();
+  std::cout << (leafs.size() + 1) / 2;
 }
