@@ -3,12 +3,12 @@
 #include <set>
 #include <vector>
 
-const int cInf = 2'000'000'000;
+const int64_t cInf = 2'000'000'000'000'000'000;
 
 struct Path {
-  int destination;
-  int price;
-  int time;
+  int destination = -1;
+  int64_t price = cInf;
+  int64_t time = cInf;
   bool operator<(const Path& other) const {
     if (destination != other.destination) {
       return destination < other.destination;
@@ -21,50 +21,29 @@ struct Path {
 };
 
 struct Vertex {
-  int price = cInf;
-  int time = cInf;
+  int64_t price = cInf;
+  int64_t time = cInf;
   size_t came_from = cInf;
-  int prev_path_time = cInf;
+  int64_t prev_path_time = cInf;
 
   bool operator<(const Vertex& other) const {
-    // if (time != other.time) {
-    return time < other.time;
-    // }
-    // if (price != other.price) {
-    //   return price < other.price;
-    // }
-    // return came_from < other.came_from;
+    if (time != other.time) {
+      return time < other.time;
+    }
+    if (price != other.price) {
+      return price < other.price;
+    }
+    return came_from < other.came_from;
   }
 };
 
-std::vector<int> GetMinTimes(const std::vector<std::vector<Path>>& graph,
-                             int start) {
-  std::vector<int> times(graph.size(), cInf);
-  times[start] = 0;
-  std::set<std::pair<int, int>> queue;
-  queue.insert({0, start});
-  while (!queue.empty()) {
-    auto b = *queue.begin();
-    queue.erase(queue.begin());
-    int v = b.second;
-    for (auto u : graph[v]) {
-      if (times[u.destination] > times[v] + u.time) {
-        queue.erase({times[u.destination], u.destination});
-        times[u.destination] = times[v] + u.time;
-        queue.insert({times[u.destination], u.destination});
-      }
-    }
-  }
-  return times;
-}
-
-std::pair<int, std::vector<size_t>> GetMinPricePath(
+std::pair<int64_t, std::vector<size_t>> GetMinPricePath(
     const std::vector<std::vector<Path>>& graph,
-    const std::vector<std::set<Vertex>>& vertices) {
+    const std::vector<std::set<Vertex>>& vertices, int64_t t) {
   Vertex best_end = *(--(vertices[graph.size() - 1].end()));
-  int ans_sum = best_end.price;
+  auto ans_sum = best_end.price;
   std::vector<size_t> ans_vertices(0);
-  if (best_end.price >= cInf) {
+  if ((best_end.came_from >= cInf) || (best_end.time > t)) {
     return {-1, ans_vertices};
   }
   int current_index = graph.size() - 1;
@@ -78,14 +57,14 @@ std::pair<int, std::vector<size_t>> GetMinPricePath(
   return {ans_sum, ans_vertices};
 }
 
-std::pair<int, std::vector<size_t>> Dijkstra(
+std::pair<int64_t, std::vector<size_t>> Dijkstra(
     const std::vector<std::vector<Path>>& graph, int t) {
   std::vector<std::set<Vertex>> vertices(
       graph.size(),
       std::set<Vertex>());  // v[i] - set of starting times, from which vertex i
                             // can be reached with price
-  auto min_times_till_end =
-      GetMinTimes(graph, static_cast<int>(graph.size() - 1));
+  // auto min_times_till_end =
+  //     GetMinTimes(graph, static_cast<int>(graph.size() - 1));
   vertices[0].insert({0, 0, 0, 0});
   for (size_t i = 1; i < vertices.size(); ++i) {
     vertices[i].insert({cInf, 0, cInf, cInf});
@@ -97,11 +76,8 @@ std::pair<int, std::vector<size_t>> Dijkstra(
     queue.erase(queue.begin());
     int current_index = current.second;
     for (auto path : graph[current_index]) {
-      int new_time = current.first.time + path.time;
-      int new_price = current.first.price + path.price;
-      if (new_time + min_times_till_end[path.destination] > t) {
-        continue;
-      }
+      int64_t new_time = current.first.time + path.time;
+      int64_t new_price = current.first.price + path.price;
       Vertex new_vertex = {new_price, new_time,
                            static_cast<size_t>(current_index), path.time};
       auto pv = --(vertices[path.destination].upper_bound(new_vertex));
@@ -115,7 +91,7 @@ std::pair<int, std::vector<size_t>> Dijkstra(
       }
     }
   }
-  return GetMinPricePath(graph, vertices);
+  return GetMinPricePath(graph, vertices, t);
 }
 
 int main() {
@@ -127,8 +103,8 @@ int main() {
   for (int i = 0; i < m; ++i) {
     int start;
     int end;
-    int price;
-    int time;
+    int64_t price;
+    int64_t time;
     std::cin >> start >> end >> price >> time;
     graph[start - 1].push_back({end - 1, price, time});
     graph[end - 1].push_back({start - 1, price, time});
