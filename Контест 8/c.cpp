@@ -31,7 +31,7 @@ struct Vertex {
       return time < other.time;
     }
     if (price != other.price) {
-      return price < other.price;
+      return price > other.price;
     }
     return came_from < other.came_from;
   }
@@ -51,7 +51,7 @@ std::pair<int64_t, std::vector<size_t>> GetMinPricePath(
     ans_vertices.push_back(current_index);
     current_index = best_end.came_from;
     best_end = *(--(vertices[best_end.came_from].upper_bound(
-        {cInf, best_end.time - best_end.prev_path_time, cInf, cInf})));
+        {-1, best_end.time - best_end.prev_path_time, cInf, cInf})));
   }
   ans_vertices.push_back(0);
   return {ans_sum, ans_vertices};
