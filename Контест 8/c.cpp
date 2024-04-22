@@ -3,95 +3,84 @@
 #include <set>
 #include <vector>
 
-const int64_t cInf = 2'000'000'000'000'000'000;
+const int64_t cInf = 2'000'000'000;
 
 struct Path {
-  int destination = -1;
+  size_t destination = cInf;
   int64_t price = cInf;
   int64_t time = cInf;
-  bool operator<(const Path& other) const {
-    if (destination != other.destination) {
-      return destination < other.destination;
-    }
-    if (price != other.price) {
-      return price < other.price;
-    }
-    return time < other.time;
-  }
 };
 
-struct Vertex {
-  int64_t price = cInf;
+struct Node {
   int64_t time = cInf;
-  size_t came_from = cInf;
+  int64_t price = cInf;
+  size_t index = cInf;
+  size_t prev_index = cInf;
   int64_t prev_path_time = cInf;
-
-  bool operator<(const Vertex& other) const {
-    if (time != other.time) {
-      return time < other.time;
-    }
-    if (price != other.price) {
-      return price > other.price;
-    }
-    return came_from < other.came_from;
-  }
 };
 
-std::pair<int64_t, std::vector<size_t>> GetMinPricePath(
-    const std::vector<std::vector<Path>>& graph,
-    const std::vector<std::set<Vertex>>& vertices, int64_t t) {
-  Vertex best_end = *(--(vertices[graph.size() - 1].end()));
-  auto ans_sum = best_end.price;
-  std::vector<size_t> ans_vertices(0);
-  if ((best_end.came_from >= cInf) || (best_end.time > t)) {
-    return {-1, ans_vertices};
-  }
-  int current_index = graph.size() - 1;
-  while (current_index != 0) {
-    ans_vertices.push_back(current_index);
-    current_index = best_end.came_from;
-    best_end = *(--(vertices[best_end.came_from].upper_bound(
-        {-1, best_end.time - best_end.prev_path_time, cInf, cInf})));
-  }
-  ans_vertices.push_back(0);
-  return {ans_sum, ans_vertices};
+bool NodeCmpByTime(const Node& left, const Node& right) {
+  return left.time < right.time;
 }
 
-std::pair<int64_t, std::vector<size_t>> Dijkstra(
-    const std::vector<std::vector<Path>>& graph, int t) {
-  std::vector<std::set<Vertex>> vertices(
-      graph.size(),
-      std::set<Vertex>());  // v[i] - set of starting times, from which vertex i
-                            // can be reached with price
-  // auto min_times_till_end =
-  //     GetMinTimes(graph, static_cast<int>(graph.size() - 1));
-  vertices[0].insert({0, 0, 0, 0});
-  for (size_t i = 1; i < vertices.size(); ++i) {
-    vertices[i].insert({cInf, 0, cInf, cInf});
+bool NodeCmpByPrice(const Node& left, const Node& right) {
+  if (left.price != right.price) {
+    return left.price < right.price;
   }
-  std::set<std::pair<Vertex, int>> queue;
-  queue.insert({*vertices[0].begin(), 0});
+  return left.index < right.index;
+}
+
+std::pair<int64_t, std::vector<size_t>> GetMinPath(
+    const std::vector<std::set<Node, decltype(NodeCmpByTime)*>>& nodes) {
+  auto cur_node = --(--((nodes.back()).end()));
+  int64_t min_price = cur_node->price;
+  if (min_price == cInf) {
+    return {-1, {}};
+  }
+  std::vector<size_t> ans_path(0);
+  while (cur_node->index != 0) {
+    ans_path.push_back(cur_node->index);
+    cur_node =
+        --(nodes[cur_node->prev_index].upper_bound({cur_node->prev_path_time}));
+  }
+  ans_path.push_back(0);
+  std::reverse(ans_path.begin(), ans_path.end());
+  return {min_price, ans_path};
+}
+
+auto Dijkstra(const std::vector<std::vector<Path>>& graph, int t) {
+  std::vector<std::set<Node, decltype(NodeCmpByTime)*>> nodes(
+      graph.size(), std::set<Node, decltype(NodeCmpByTime)*>(NodeCmpByTime));
+  nodes[0].insert({0, 0, 0});
+  for (size_t i = 1; i < graph.size(); ++i) {
+    nodes[i].insert({0, cInf, i});
+    nodes[i].insert({cInf, cInf, i});
+  }
+  std::set<Node, decltype(NodeCmpByPrice)*> queue(NodeCmpByPrice);
+  queue.insert({0, 0, 0});
   while (!queue.empty()) {
-    auto current = *queue.begin();
+    Node current = *queue.begin();
     queue.erase(queue.begin());
-    int current_index = current.second;
-    for (auto path : graph[current_index]) {
-      int64_t new_time = current.first.time + path.time;
-      int64_t new_price = current.first.price + path.price;
-      Vertex new_vertex = {new_price, new_time,
-                           static_cast<size_t>(current_index), path.time};
-      auto pv = --(vertices[path.destination].upper_bound(new_vertex));
-      if (new_price < pv->price) {
-        if (pv->time >= new_time) {
-          queue.erase({*pv, path.destination});
-          vertices[path.destination].erase(pv);
+    for (auto path : graph[current.index]) {
+      int64_t new_price = current.price + path.price;
+      int64_t new_time = current.time + path.time;
+      if (new_time > t) {
+        continue;
+      }
+      auto best_passing_time_it =
+          --(nodes[path.destination].upper_bound({new_time, new_price, cInf}));
+      if (new_price < best_passing_time_it->price) {
+        if (new_time == best_passing_time_it->time) {
+          queue.erase(*best_passing_time_it);
+          nodes[path.destination].erase(best_passing_time_it);
         }
-        vertices[path.destination].insert(new_vertex);
-        queue.insert({new_vertex, path.destination});
+        nodes[path.destination].insert(
+            {new_time, new_price, path.destination, current.index, path.time});
+        queue.insert({new_time, new_price, path.destination});
       }
     }
   }
-  return GetMinPricePath(graph, vertices, t);
+  return GetMinPath(nodes);
 }
 
 int main() {
@@ -99,24 +88,22 @@ int main() {
   int m;
   int t;
   std::cin >> n >> m >> t;
-  std::vector<std::vector<Path>> graph(n, std::vector<Path>(0));
+  std::vector<std::vector<Path>> graph(n);
   for (int i = 0; i < m; ++i) {
     int start;
     int end;
-    int64_t price;
-    int64_t time;
+    int price;
+    int time;
     std::cin >> start >> end >> price >> time;
-    graph[start - 1].push_back({end - 1, price, time});
-    graph[end - 1].push_back({start - 1, price, time});
+    graph[start - 1].push_back({static_cast<size_t>(end - 1), price, time});
+    graph[end - 1].push_back({static_cast<size_t>(start - 1), price, time});
   }
-  auto [sum, res] = Dijkstra(graph, t);
-  if (res.empty()) {
-    std::cout << -1;
-    return 0;
-  }
-  std::reverse(res.begin(), res.end());
-  std::cout << sum << "\n" << res.size() << "\n";
-  for (auto vertex : res) {
-    std::cout << vertex + 1 << " ";
+  auto res = Dijkstra(graph, t);
+  std::cout << res.first << "\n";
+  if (res.first != -1) {
+    std::cout << res.second.size() << "\n";
+    for (auto x : res.second) {
+      std::cout << x + 1 << " ";
+    }
   }
 }
