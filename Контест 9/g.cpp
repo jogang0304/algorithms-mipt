@@ -4,25 +4,25 @@
 #include <set>
 #include <vector>
 
-using SubGraph = std::vector<size_t>;
+using SubGraph = std::vector<int>;
 using Graph = std::vector<SubGraph>;
 
 class MatchingBipartiteGraph {
  public:
   MatchingBipartiteGraph(Graph& g) : graph_(g) {}
 
-  std::set<std::pair<size_t, size_t>> GetMatching() {
+  std::set<std::pair<int, int>> GetMatching() {
     std::vector<bool> used(graph_.size(), false);
-    std::vector<size_t> match(graph_.size(), cMatchNullValue);
+    std::vector<int> match(graph_.size(), cMatchNullValue);
     for (size_t i = 0; i < graph_.size(); ++i) {
       Augment(used, match, i);
-      used.resize(graph_.size(), false);
+      std::fill(used.begin(), used.end(), false);
     }
-    std::set<std::pair<size_t, size_t>> ans;
-    for (size_t i = 0; i < match.size(); ++i) {
-      size_t start = std::min(i, match[i]);
-      size_t end = std::max(i, match[i]);
-      if (end != cMatchNullValue) {
+    std::set<std::pair<int, int>> ans;
+    for (int i = 0; i < static_cast<int>(match.size()); ++i) {
+      int start = std::min(i, match[i]);
+      int end = std::max(i, match[i]);
+      if (start != cMatchNullValue) {
         ans.insert({start, end});
       }
     }
@@ -30,10 +30,10 @@ class MatchingBipartiteGraph {
   }
 
  private:
-  const size_t cMatchNullValue = 2'000'000'009;
+  const int cMatchNullValue = -1;
   Graph graph_;
 
-  bool Augment(std::vector<bool>& used, std::vector<size_t>& match, size_t v) {
+  bool Augment(std::vector<bool>& used, std::vector<int>& match, int v) {
     if (used[v]) {
       return false;
     }
